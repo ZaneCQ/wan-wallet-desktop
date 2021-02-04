@@ -15,7 +15,7 @@ files:
 
 publish:
   - provider: github
-    owner: wanchain
+    owner: ZaneCQ
     repo: wan-wallet-desktop
 
 mac:
@@ -48,3 +48,5 @@ nsis:
   installerIcon: build/icons/icon.ico
 
 afterSign: scripts/notarize.js
+
+afterAllArtifactBuild: scripts/afterBuild.js

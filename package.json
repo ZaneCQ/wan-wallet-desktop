@@ -1,7 +1,7 @@
 {
   "name": "wanwallet",
   "productName": "Wan Wallet",
-  "version": "1.4.8",
+  "version": "1.4.12",
   "description": "Wanchain's new multicoin wallet",
   "main": "./build/main.js",
   "author": {
@@ -29,23 +29,25 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/wanchain/wan-wallet-desktop.git"
+    "url": "git+https://github.com/ZaneCQ/wan-wallet-desktop.git"
   },
   "keywords": [],
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/wanchain/wan-wallet-desktop/issues"
+    "url": "https://github.com/ZaneCQ/wan-wallet-desktop/issues"
   },
-  "homepage": "https://github.com/wanchain/wan-wallet-desktop#readme",
+  "homepage": "https://github.com/ZaneCQ/wan-wallet-desktop#readme",
   "dependencies": {
     "@babel/plugin-proposal-class-properties": "^7.4.0",
     "@babel/runtime": "^7.4.0",
     "@hot-loader/react-dom": "^16.8.6",
+    "@octokit/rest": "^18.0.15",
     "antd": "3.19.8",
     "autoprefixer": "^9.5.0",
     "axios": "^0.18.0",
     "bignumber.js": "^8.1.1",
     "bs58check": "^2.1.2",
+    "compare-versions": "^3.6.0",
     "desktop-idle": "^1.1.2",
     "dotenv": "^8.0.0",
     "electron-devtools-installer": "^2.2.4",
