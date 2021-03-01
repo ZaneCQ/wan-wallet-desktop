@@ -256,6 +256,7 @@ class Settings {
    * @return {string} wanchain network, either mainnet or testnet
    */
   get network() {
+    // return 'testnet'; // TODO
     if (_network) {
       return _network
     }

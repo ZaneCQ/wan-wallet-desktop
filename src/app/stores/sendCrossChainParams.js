@@ -5,6 +5,8 @@ import session from './session';
 const GASLIMIT = 21000;
 
 class SendCrossChainParams {
+  @observable record = {};
+
   @observable currentFrom = '';
 
   @observable transParams = {};
@@ -26,6 +28,15 @@ class SendCrossChainParams {
     txFeeRatio: ''
   };
 
+  @observable XRPCrossTransParams = {
+    from: '',
+    storemanAddr: '',
+    value: 0,
+    groupId: '',
+    toWanAddress: '',
+    path: ''
+  };
+
   @observable gasLimit = GASLIMIT;
 
   @observable defaultGasPrice = 10;
@@ -36,6 +47,10 @@ class SendCrossChainParams {
 
   constructor() {
     makeObservable(this);
+  }
+
+  @action updateRecord(record) {
+    self.record = record;
   }
 
   @action addCrossTransTemplate(addr, params = {}) {
@@ -68,15 +83,21 @@ class SendCrossChainParams {
     });
   }
 
-    @action updateTransParams (addr, paramsObj) {
-      Object.keys(paramsObj).forEach(item => {
-        self.transParams[addr][item] = paramsObj[item];
-      });
-    }
+  @action updateTransParams(addr, paramsObj) {
+    Object.keys(paramsObj).forEach(item => {
+      self.transParams[addr][item] = paramsObj[item];
+    });
+  }
 
-    @computed get minCrossBTC() {
-      return 0.002;
-    }
+  @action updateXRPTransParams(paramsObj) {
+    Object.keys(paramsObj).forEach(item => {
+      self.XRPCrossTransParams[item] = paramsObj[item];
+    });
+  }
+
+  @computed get minCrossBTC() {
+    return 0.002;
+  }
 
   @computed get btcFee() {
     return session.chainId === 1 ? 0.0001 : 0.001;

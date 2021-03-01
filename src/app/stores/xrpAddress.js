@@ -22,6 +22,7 @@ class XrpAddress {
       getAllAmount: computed,
       getAddrList: computed,
       historyList: computed,
+      getNormalAddrList: computed,
       addAddress: action,
       deleteAddress: action,
       updateAddress: action,
@@ -39,6 +40,24 @@ class XrpAddress {
     return sum.toString();
   }
 
+  get getNormalAddrList() {
+    let addrList = [];
+    let normalArr = Object.keys(self.addrInfo.normal);
+    normalArr.forEach(item => {
+      let type = 'normal';
+      addrList.push({
+        key: item,
+        name: self.addrInfo[type][item].name,
+        address: item,
+        balance: self.addrInfo[type][item].balance,
+        path: `${XRPPATH}${self.addrInfo[type][item].path}`,
+        action: 'send',
+        wid: WALLETID.NATIVE
+      });
+    });
+    return addrList;
+  }
+
   get getAddrList() {
     let addrList = [];
     let normalArr = self.addrInfo['normal'];
@@ -52,6 +71,7 @@ class XrpAddress {
           name: obj[item].name,
           address: item,
           balance: formatNum(obj[item].balance),
+          orignBalance: obj[item].balance,
           path: `${XRPPATH}${obj[item].path}`,
           action: 'send',
           wid: walletID
@@ -68,23 +88,28 @@ class XrpAddress {
   }
 
   get historyList() {
-    let historyList = [];
-    Object.keys(self.transHistory).forEach(item => {
-      let data = self.transHistory[item];
-      let { status, from, successTime, sendTime, value, to } = data;
-      if (Object.values(self.addrInfo).find(item => Object.keys(item).includes(from))) {
-        historyList.push({
-          from,
-          key: item,
-          time: timeFormat((successTime || sendTime)),
-          to: to,
-          value: formatNum(value),
-          status: languageIntl.language && ['Failed', 'Success'].includes(status) ? intl.get(`TransHistory.${status.toLowerCase()}`) : intl.get('TransHistory.pending'),
-          sendTime: sendTime,
-        });
-      }
-    });
-    return historyList.sort((a, b) => b.sendTime - a.sendTime);
+    try {
+      let historyList = [];
+      Object.keys(self.transHistory).forEach(item => {
+        let data = self.transHistory[item];
+        let { status, from, successTime, sendTime, value, to } = data;
+        if (Object.values(self.addrInfo).find(item => Object.keys(item).includes(from))) {
+          historyList.push({
+            from,
+            key: item,
+            time: timeFormat((successTime || sendTime)),
+            to: to,
+            value: formatNum(value),
+            status: languageIntl.language && ['Failed', 'Success'].includes(status) ? intl.get(`TransHistory.${status.toLowerCase()}`) : intl.get('TransHistory.pending'),
+            sendTime: sendTime,
+          });
+        }
+      });
+      return historyList.sort((a, b) => b.sendTime - a.sendTime);
+    } catch (e) {
+      console.log('get history list failed:', e);
+      return [];
+    }
   }
 
   addAddress(newAddr) {

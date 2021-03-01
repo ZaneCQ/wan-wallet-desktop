@@ -43,7 +43,6 @@ class CrossChain {
   @action getTokenPairs() {
     return new Promise((resolve, reject) => {
       wand.request('crossChain_getTokenPairs', {}, async (err, data) => {
-        console.log('get data:', err, data)
         if (err) {
           console.log('getTokenPairs failed: ', err);
           reject(err)
@@ -153,7 +152,7 @@ class CrossChain {
     }
     wand.request('crossChain_setCcTokenSelectStatus', { id, selected }, (err, data) => {
       if (err) {
-        console.log('Update selection status failed.', err);
+        console.log('Failed to update selection status', err);
         message.error(intl.get('CrossChain.selectFailed'));
       } else {
         let target = Object.values(this.crossChainSelections).flat(1).find(obj => obj.id === id);
@@ -214,6 +213,9 @@ class CrossChain {
     let trans = [];
     let decimals = 8;
     try {
+      if (this.currSymbol.length === 0) {
+        return trans;
+      }
       decimals = this.crossChainSelections[this.currSymbol][0].ancestorDecimals;
     } catch (err) {
       console.log(err);
@@ -251,9 +253,12 @@ class CrossChain {
 
   @computed get crossEOSTrans() {
     let trans = [];
-    let decimals = this.crossChainSelections[self.currSymbol][0].ancestorDecimals;
-    self.crossTrans.forEach((item, index) => {
-      if (isSameString(item.tokenSymbol, self.currSymbol) && (item.lockTxHash !== '')) {
+    if (this.currSymbol.length === 0) {
+      return trans;
+    }
+    let decimals = this.crossChainSelections[this.currSymbol][0].ancestorDecimals;
+    this.crossTrans.forEach((item, index) => {
+      if (isSameString(item.tokenSymbol, this.currSymbol) && (item.lockTxHash !== '')) {
         trans.push({
           key: index,
           hashX: item.hashX,

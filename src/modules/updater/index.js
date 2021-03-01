@@ -45,7 +45,7 @@ class WalletUpdater {
           });
           if (res.status === 200) {
             this._logger.info('lowestCompatibleVersion:' + res.data.lowestCompatibleVersion);
-            if (res.data.lowestCompatibleVersion.length !== 0 && compareVersions(version, res.data.lowestCompatibleVersion) === -1) { // Current version is less than the minimum compatible version, should be forced to upgrade the wallet.
+            if (res.data.lowestCompatibleVersion.length !== 0 && compareVersions(version, res.data.lowestCompatibleVersion) === -1) { // Current version is less than the minimum compatible version, wallet should be forced to upgrade.
               this._logger.info('Force Upgrade');
               return 'hard';
             } else {
@@ -120,9 +120,13 @@ class WalletUpdater {
       }
 
       let upgradeType = await this.updater.getUpgradeType();
-      this._logger.info('upgradeType====:' + upgradeType);
+      this._logger.info('upgrade type:' + upgradeType);
       if (upgradeType === false) {
-        // Show a dialog to notice user.
+        dialog.showMessageBox({
+          title: i18n.t('main.checkUpdatesDialog.title'),
+          type: 'info',
+          message: i18n.t('main.checkUpdatesDialog.message')
+        });
         return false;
       } else { // Soft upgrade
         updateModal = Windows.createModal('systemUpdate', {
@@ -181,7 +185,7 @@ class WalletUpdater {
     }
 
     this.updater.on('update-downloaded', (info) => {
-      this._logger.info('=======update-downloaded=======:');
+      this._logger.info('======= update-downloaded =======:');
       if (process.platform !== 'darwin') updateModal.webContents.send('updateInfo', 'upgradeProgress', 'done');
       setTimeout(() => {
         this.updater.quitAndInstall();

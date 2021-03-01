@@ -45,10 +45,6 @@ class TokenTransHistory extends Component {
     }
   }
 
-  /* componentDidUpdate(prevProps, prevState) {
-    console.log('Did Update:', prevProps, prevState);
-  } */
-
   render() {
     const { name, getChainStoreInfoByChain, currTokenChain } = this.props;
     let addrList = [];
@@ -68,6 +64,7 @@ class TokenTransHistory extends Component {
       }
       dataSource = tokenTransferHistoryList;
     }
+
     return (
       <div>
         <div className="historyCon" id="tokenAddrSelect">

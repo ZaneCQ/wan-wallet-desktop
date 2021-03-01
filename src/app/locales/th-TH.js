@@ -32,7 +32,7 @@ const th_TH = {
     'Common.create': 'สร้างแอดเดรส',
     'Common.balance': 'ยอดคงเหลือ',
     'Common.sendFailed': 'เครือข่ายไม่เสถียร กรุณาลองอีกครั้ง',
-    'Common.sendFailedForInsufficientFunds': 'Transaction sent failed. Please make sure you have sufficient balance.',
+    'Common.sendFailedForInsufficientFunds': 'ไม่สามารถทำธุรกรรมได้ กรุณาตรวจสอบว่าคุณมียอดคงเหลือเพียงพอ',
     'Common.networkError': 'เครือข่ายผิดพลาด กรุณาปิดและเปิดกระเป๋าใหม่',
     'Common.eosTokens': 'โทเค็น EOS',
     'Common.convert': 'แปลง',
@@ -40,9 +40,9 @@ const th_TH = {
     'Common.storemanGroup': 'กลุ่ม Storeman',
     'Common.chain': 'เชน',
     'Common.amountTooLow': 'จำนวนจะต้องไม่ต่ำกว่า { minAmount } WAN',
-    'Common.availableBalance': 'Available Balance is {availableBalance}',
+    'Common.availableBalance': 'ยอดคงเหลือ {availableBalance}',
 
-    'Xrp.destinationTag': 'Destination Tag',
+    'Xrp.destinationTag': 'Tag ปลายทาง',
 
     'Layout.connecting': 'กำลังเชื่อมต่อกับเซิฟเวอร์',
     'Layout.connected': 'เชื่อมต่อกับเซิฟเวอร์แล้ว',
@@ -234,7 +234,7 @@ const th_TH = {
     'WanAccount.publicKey': 'Public Key',
     'WanAccount.createAccountFailed': 'การสร้างบัญชีล้มเหลว',
     'WanAccount.createAccountSuccess': 'การสร้างบัญชีสำเร็จ',
-    'WanAccount.newAddressExistInImportedList': 'The new address below will be created, but there is the same address has been imported.Please delete the imported address before create new address.',
+    'WanAccount.newAddressExistInImportedList': 'ที่อยู่ใหม่ที่จะถูกสร้างด้านล่างนี้ แต่คุณได้เคยทำการนำเข้าไว้ก่อนหน้าแล้ว กรุณาลบที่อยู่ที่เคยนำเข้าก่อนหน้าก่อนที่จะสร้างที่อยู่ใหม่',
 
     'EosAccount.name': 'ชื่อ',
     'EosAccount.publicKey': 'Public Key',
@@ -258,7 +258,7 @@ const th_TH = {
     'EOSKeyPairList.publicKey': 'Public Key',
     'EOSKeyPairList.searchPublicKey': 'Public Key ที่ถูกค้นหา',
     'EOSKeyPairList.selectOneAccount': 'กรุณาเลือกบัญชีอย่างน้อยหนึ่งบัญชี',
-    'EOSKeyPairList.tipText': `หากคุณไม่เคยผูกบัญชี EOS กับ EOS Key Pair ที่สร้างจากกระเป๋า Wan คุณสามารถใช้บริการบุคคลที่สามเพื่อสร้างบัญชีและผูกกับ Key Pair ได้แต่ถ้าหากคุณเคยมีบัญชี EOS ที่ผู้กับ Key Pair แล้วคุณสามารถสร้างบัญชี EOS ใหม่โดยใช้ข้อมูลที่มีอยู่แล้วได้`,
+    'EOSKeyPairList.tipText': 'หากคุณไม่เคยผูกบัญชี EOS กับ EOS Key Pair ที่สร้างจากกระเป๋า Wan คุณสามารถใช้บริการบุคคลที่สามเพื่อสร้างบัญชีและผูกกับ Key Pair ได้แต่ถ้าหากคุณเคยมีบัญชี EOS ที่ผู้กับ Key Pair แล้วคุณสามารถสร้างบัญชี EOS ใหม่โดยใช้ข้อมูลที่มีอยู่แล้วได้',
     'EOSKeyPairList.getImportedAccountsFailed': 'ไม่สามารถดึงบัญชีที่ถูกนำเข้ามาได้',
     'EOSKeyPairList.getAccountsFailed': 'การดึงข้อมูลบัญชีล้มเหลว',
 
@@ -422,7 +422,6 @@ const th_TH = {
     'NormalTransForm.ConfirmForm.inputData': 'ข้อมูลที่ส่งมา',
     'NormalTransForm.ConfirmForm.faceValue': 'มูลค่าที่ตราไว้',
     'NormalTransForm.ConfirmForm.count': 'จำนวนนับ',
-
     'NormalTransForm.estimateGasFailed': 'ค่าแก๊สไม่เพียงพอต่อการดำเนินการ กรุณาลองใหม่อีกครั้ง',
     'NormalTransForm.invalidAddress': 'แอดเดรสไม่ถูกต้อง',
     'NormalTransForm.shouldBe10Times': 'จำนวนจะต้องหารด้วย 10 ลงตัว',
@@ -453,13 +452,18 @@ const th_TH = {
     'NormalTransForm.sendAll': 'ส่งยอดที่มีอยู่ทั้งหมด',
     'NormalTransForm.password': 'รหัสผ่านกระเป๋า',
     'NormalTransForm.pwdIsIncorrect': 'รหัสผ่านไม่ถูกต้อง',
+    'NormalTransForm.destinationTagRule': 'Tag ปลายทางไม่ถูกต้อง',
+    'NormalTransForm.isNativeBtcAddress': 'ไม่อนุญาตให้ส่งหาตัวเอง',
+    'NormalTransForm.inputToAddress': 'กรุณากรอกที่อยู่ปลายทาง',
 
     'CrossChainTransForm.ConfirmForm.transactionConfirm': 'ยืนยันการทำธุรกรรมชนิด Cross Chain',
     'CrossChainTransForm.capacity': 'ความจุ',
-    'CrossChainTransForm.quota': 'ความจุคงเหลือ',
+    'CrossChainTransForm.quota': 'โควต้า',
     'CrossChainTransForm.txFeeRatio': 'อัตราส่วนค่าธรรมเนียม',
     'CrossChainTransForm.estimateFee': 'ค่าธรรมเนียมโดยประเมิน',
     'CrossChainTransForm.gasFee': 'ค่าแก๊ส',
+    'CrossChainTransForm.userNetworkFee': 'User Network Fee',
+    'CrossChainTransForm.crossChainNetworkFee': 'Cross-chain Network Fee',
     'CrossChainTransForm.operationFee': 'ค่าธรรมเนียมการจัดการ',
     'CrossChainTransForm.overBalance': 'ค่าใช้จ่ายเกินยอดคงเหลือ กรุณาตรวจสอบยอดคงเหลือทั้งเชนต้นทางและปลายทาง',
     'CrossChainTransForm.overOriginalBalance': 'ยอดบัญชีไม่พอค่าใช้จ่าย กรุณาตรวจสอบยอดบัญชีจากเชนต้นทาง',
@@ -484,7 +488,9 @@ const th_TH = {
     'CrossChainTransForm.HTLC': 'เน้นความปลอดภัย',
     'CrossChainTransForm.UnderFastMinimum': 'ค่ามีน้อยกว่าจำนวนที่น้อยที่สุดที่จะเป็นไปได้',
     'CrossChainTransForm.getOperationFeeFailed': 'การดึงค่าธรรมเนียมการจัดการล้มเหลว',
-    'CrossChainTransForm.getQuotaFailed': 'Get quota failed.',
+    'CrossChainTransForm.getQuotaFailed': 'ไม่สามารถดึงข้อมูลโควต้าได้',
+    'CrossChainTransForm.getNetworkFeeFailed': 'ไม่สามารถดึงข้อมูลค่าธรรมเนียมได้',
+    'CrossChainTransForm.youWillReceive': 'คุณจะได้รับ',
 
     'CrossChain.selectFailed': 'ไม่สามารถอัพเดทการเลือกได้.',
 
@@ -731,7 +737,7 @@ const th_TH = {
 
     'popup.search': 'ค้นหา',
     'title.imported': 'นำเข้าแอดเดรส',
-    'title.importedKey': 'Imported Key',
+    'title.importedKey': 'Key ที่ถูกนำเข้า',
 
     'network.down': 'การเชื่อมต่อเครือข่ายล้มเหลว กรุณาลองอีกครั้งในภายหลัง',
 
@@ -770,9 +776,9 @@ const th_TH = {
     'Storeman.delegationTopup': 'เพิ่มจำนวนการ Delegate',
     'Storeman.registration': 'ลงทะเบียนเป็น Storeman',
 
-    'MoreAccount.inputSearchText': 'Input search text',
+    'MoreAccount.inputSearchText': 'กรอกคำค้นหา',
 
-    'Storeman.delegationWarnning': 'Notice:  Click "exit" any time before the end of current Storeman cycle to withdraw your WAN back to your wallet at cycle end time.'
+    'Storeman.delegationWarning': 'หมายเหตุ:  คุณสามารถกดออกจากการ Delegate ได้เสมอก่อนการจบรอบของ Storeman และ WAN ของคุณจะถูกส่งคืนหลังจากจบรอบแล้วเท่านั้น'
 }
 
 export default th_TH;

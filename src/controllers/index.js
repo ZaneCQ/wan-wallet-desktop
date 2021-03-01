@@ -548,12 +548,12 @@ ipc.on(ROUTE_ADDRESS, async (event, actionUni, payload) => {
                     let addresses = ['XRP'].includes(chainType) ? addr : addr.map(item => `0x${item}`);
                     balance = await ccUtil.getMultiBalances(addresses, chainType)
                 } else {
-                    let address = ['XRP'].includes(chainType) ? addr : `0x${addr}`;
+                    let address = ['XRP'].includes(chainType) ? addr[0] : `0x${addr}`;
                     balance = await ccUtil.getBalance(address, chainType);
                     balance = { [address]: balance }
                 }
             } catch (e) {
-                logger.error('Get balance failed:');
+                logger.error('Failed to get balance:');
                 logger.error(e.message || e.stack)
                 err = e
             }
@@ -608,6 +608,19 @@ ipc.on(ROUTE_ADDRESS, async (event, actionUni, payload) => {
                 ret = await ccUtil.btcCoinSelect(utxos, value * Math.pow(10, 8), feeRate, minConfParam);
             } catch (e) {
                 logger.error('btcCoinSelect failed:')
+                logger.error(e.message || e.stack)
+                err = e
+            }
+
+            sendResponse([ROUTE_ADDRESS, [action, id].join('#')].join('_'), event, { err: err, data: ret })
+            break
+
+        case 'btcCoinSelectSplit':
+            try {
+                let { utxos, to: target, feeRate } = payload;
+                ret = await ccUtil.btcCoinSelectSplit(utxos, target, feeRate);
+            } catch (e) {
+                logger.error('btcCoinSelectSplit failed:')
                 logger.error(e.message || e.stack)
                 err = e
             }
@@ -1058,7 +1071,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
                 ret = await global.crossInvoker.invokeNormalTrans(srcChain, input);
                 logger.info('Transaction hash: ' + JSON.stringify(ret));
             } catch (e) {
-                logger.error('Send transaction failed: ' + e.message || e.stack)
+                logger.error('Failed to send transaction: ' + e.message || e.stack)
                 err = e
             }
             sendResponse([ROUTE_TX, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1091,7 +1104,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
                 ret = await global.crossInvoker.invokeNormalTrans(srcChain, input);
                 logger.info('Transaction hash: ' + JSON.stringify(ret));
             } catch (e) {
-                logger.error('Send transaction failed: ' + e.message || e.stack)
+                logger.error('Failed to send transaction: ' + e.message || e.stack)
                 err = e
             }
             sendResponse([ROUTE_TX, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1103,7 +1116,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
                 let srcChain = global.crossInvoker.getSrcChainNameByContractAddr(COIN_ACCOUNT, 'BTC');
                 ret = await global.crossInvoker.invokeNormalTrans(srcChain, payload);
             } catch (e) {
-                logger.error('Send transaction failed: ' + e.message || e.stack)
+                logger.error('Failed to send transaction: ' + e.message || e.stack)
                 err = e
             }
             sendResponse([ROUTE_TX, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1115,7 +1128,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
                 let srcChain = global.crossInvoker.getSrcChainNameByContractAddr(COIN_ACCOUNT, 'XRP');
                 ret = await global.crossInvoker.invokeNormalTrans(srcChain, payload);
             } catch (e) {
-                logger.error('Send transaction failed: ' + e.message || e.stack)
+                logger.error('Failed to send transaction: ' + e.message || e.stack)
                 err = e
             }
             sendResponse([ROUTE_TX, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1129,7 +1142,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
                 let srcChain = global.crossInvoker.getSrcChainNameByContractAddr(EOSSYMBOL, 'EOS');
                 ret = await global.crossInvoker.invokeNormalTrans(srcChain, payload);
             } catch (e) {
-                logger.error('Send transaction failed: ' + e.message || e.stack)
+                logger.error('Failed to send transaction: ' + e.message || e.stack)
                 err = e
             }
             sendResponse([ROUTE_TX, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1252,7 +1265,7 @@ ipc.on(ROUTE_TX, async (event, actionUni, payload) => {
 
         case 'estimateSmartFee':
             try {
-                ret = await ccUtil.estimateSmartFee();
+                ret = await ccUtil.estimateSmartFee(payload.chainType);
             } catch (e) {
                 logger.error('estimateSmartFee failed:')
                 logger.error(e.message || e.stack)
@@ -1818,8 +1831,8 @@ ipc.on(ROUTE_CROSSCHAIN, async (event, actionUni, payload) => {
 
         case 'getQuota':
             try {
-                let { chainType, groupId, tokenPairIdArray } = payload;
-                ret = await ccUtil.getStoremanGroupQuota(chainType, groupId, tokenPairIdArray);
+                let { chainType, groupId, symbolArray } = payload;
+                ret = await ccUtil.getStoremanGroupQuota(chainType, groupId, symbolArray);
             } catch (e) {
                 logger.error('getQuota failed: ' + e);
                 err = e;
@@ -1852,11 +1865,10 @@ ipc.on(ROUTE_CROSSCHAIN, async (event, actionUni, payload) => {
                 if (payload.type === 'REDEEM') {
                     payload.input.x = ccUtil.hexAdd0x(payload.input.x);
                 }
+                console.log('---------------C data----------------')
+                console.log(srcChain, dstChain, type, input, false);
                 ret = await global.crossInvoker.invoke(srcChain, dstChain, type, input, false);
                 console.log('get ret:', ret)
-                if (!ret.code) {
-                    err = ret;
-                }
             } catch (e) {
                 logger.error('crossChain failed:');
                 logger.error(e);
@@ -1878,12 +1890,10 @@ ipc.on(ROUTE_CROSSCHAIN, async (event, actionUni, payload) => {
                     payload.input.x = ccUtil.hexAdd0x(payload.input.x);
                 }
                 ret = await global.crossInvoker.invoke(srcChain, dstChain, type, input);
-                if (!ret.code) {
-                    err = ret;
-                }
             } catch (e) {
                 logger.error('crossChain failed:')
-                logger.error(e.message || e.stack)
+                logger.error(e)
+                // logger.error(e.message || e.stack);
                 err = e
             }
             sendResponse([ROUTE_CROSSCHAIN, [action, id].join('#')].join('_'), event, { err: err, data: ret })
@@ -1899,11 +1909,11 @@ ipc.on(ROUTE_CROSSCHAIN, async (event, actionUni, payload) => {
                     payload.input.value = ccUtil.calculateLocWanFeeWei(payload.input.amount * 100000000, global.btc2WanRatio, payload.input.txFeeRatio);
                 }
                 if (payload.type === 'REDEEM') {
-                    payload.input.feeRate = await ccUtil.estimateSmartFee();
+                    payload.input.feeRate = await ccUtil.estimateSmartFee('BTC');
                     payload.input.x = ccUtil.hexAdd0x(payload.input.x);
                 }
                 if (payload.type === 'REVOKE') {
-                    payload.input.feeRate = await ccUtil.estimateSmartFee();
+                    payload.input.feeRate = await ccUtil.estimateSmartFee('BTC');
                 }
                 console.log('CC BTC:', payload.type, payload);
                 ret = await global.crossInvoker.invoke(srcChain, dstChain, type, input);
@@ -2061,6 +2071,24 @@ ipc.on(ROUTE_CROSSCHAIN, async (event, actionUni, payload) => {
                 ret = await ccUtil.getFees(chainType, chainID1, chainID2);
             } catch (e) {
                 logger.error('getFees failed:')
+                logger.error(e.message || e.stack)
+                err = e
+            }
+            sendResponse([ROUTE_CROSSCHAIN, [action, id].join('#')].join('_'), event, { err: err, data: ret })
+            break
+
+        case 'estimatedXrpFee':
+            try {
+                let payment = ccUtil.getXrpPayment(payload)
+                let data = await ccUtil.packTransaction('XRP', { address: payload.from, payment });
+                if (data && data.instructions) {
+                    ret = data.instructions.fee
+                } else {
+                    ret = '0';
+                    err = 'error'
+                }
+            } catch (e) {
+                logger.error('packTransaction failed:')
                 logger.error(e.message || e.stack)
                 err = e
             }
@@ -2769,7 +2797,7 @@ const getChainIdByType = function (type, isTestNet = false) {
 }
 const str2Hex = (str = '0x') => {
     str = str.trim();
-    if(/^0x/.test(str)) {
+    if (/^0x/.test(str)) {
         return str;
     }
     return '0x' + Buffer.from(str, 'utf8').toString('hex');

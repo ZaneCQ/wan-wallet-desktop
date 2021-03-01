@@ -7,7 +7,7 @@ import { Button, Modal, Form, Input, Icon, Radio, Checkbox, message, Spin } from
 import style from './index.less';
 import AdvancedOptionForm from 'components/AdvancedOptionForm';
 import ConfirmForm from 'components/NormalTransForm/ConfirmForm';
-import { checkWanAddr, checkETHAddr, checkBase58, getBalanceByAddr, checkAmountUnit, encodeTransferInput } from 'utils/helper';
+import { checkWanAddr, checkETHAddr, checkBTCAddr, getBalanceByAddr, checkAmountUnit, encodeTransferInput } from 'utils/helper';
 
 const Confirm = Form.create({ name: 'NormalTransForm' })(ConfirmForm);
 const AdvancedOption = Form.create({ name: 'NormalTransForm' })(AdvancedOptionForm);
@@ -175,8 +175,8 @@ class TokenNormalTransForm extends Component {
       case 'ETH':
         checkFunc = checkETHAddr;
         break;
-      case 'WBTCAN':
-        checkFunc = checkBase58;
+      case 'BTC':
+        checkFunc = checkBTCAddr;
         break;
       default:
         callback(rule.message);
@@ -305,10 +305,9 @@ class TokenNormalTransForm extends Component {
               <p className="onAdvancedT" onClick={this.onAdvanced}>{intl.get('NormalTransForm.advancedOptions')}</p>
             </Form>
           </Spin>
-
         </Modal>
 
-        <AdvancedOption transType={this.props.transType} visible={advancedVisible} onCancel={this.handleAdvancedCancel} onSave={this.handleSave} from={from} />
+        <AdvancedOption transType={this.props.transType} visible={advancedVisible} onCancel={this.handleAdvancedCancel} onSave={this.handleSave} from={from} chain={currTokenChain} />
         {
           confirmVisible &&
           <Confirm tokenAddr={this.props.tokenAddr} transType={this.props.transType} chain={currTokenChain} visible={true} onCancel={this.handleConfirmCancel} sendTrans={this.sendTrans} from={from} loading={loading} />

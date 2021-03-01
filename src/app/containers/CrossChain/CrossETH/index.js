@@ -8,6 +8,7 @@ import CopyAndQrcode from 'components/CopyAndQrcode';
 import { INBOUND, OUTBOUND } from 'utils/settings';
 import ETHTrans from 'components/CrossChain/SendCrossChainTrans/ETHTrans';
 import CrossChainTransHistory from 'components/CrossChain/CrossChainTransHistory/CrossETHHistory';
+import { convertCrossChainTxErrorText } from 'utils/helper';
 import style from './index.less';
 
 const CHAINTYPE = 'ETH';
@@ -34,15 +35,15 @@ class CrossETH extends Component {
     super(props);
     const { tokenPairs, match } = props;
     let tokenPairID = match.params.tokenPairId;
-    this.props.setCurrSymbol(CHAINTYPE);
-    this.props.changeTitle('Common.crossChain');
-    this.props.setCurrTokenPairId(tokenPairID);
     this.info = tokenPairs[tokenPairID];
-    this.props.setCurrToken(this.info.toAccount);
-    this.props.setCurrTokenChain(this.info.toChainSymbol);
   }
 
   componentDidMount() {
+    this.props.changeTitle('Common.crossChain');
+    this.props.setCurrSymbol(CHAINTYPE);
+    this.props.setCurrTokenPairId(this.props.match.params.tokenPairId);
+    this.props.setCurrToken(this.info.toAccount);
+    this.props.setCurrTokenChain(this.info.toChainSymbol);
     this.props.updateTokensBalance(this.info.toAccount, this.info.toChainSymbol);
     this.timer = setInterval(() => {
       this.props.updateTokensBalance(this.info.toAccount, this.info.toChainSymbol);
@@ -72,23 +73,19 @@ class CrossETH extends Component {
       wand.request('crossChain_crossChain', { input, tokenPairID, sourceSymbol: info.fromChainSymbol, sourceAccount: info.fromAccount, destinationSymbol: info.toChainSymbol, destinationAccount: info.toAccount, type: 'LOCK' }, (err, ret) => {
         console.log('ETH inbound result:', err, ret);
         if (err) {
-          if (err instanceof Object && err.desc && err.desc instanceof Array && err.desc.includes('ready')) {
+          if (err instanceof Object && err.desc && err.desc.includes('ready')) {
             message.warn(intl.get('Common.networkError'));
           } else {
-            message.warn(intl.get('Common.sendFailed'));
+            message.warn(err.desc);
           }
-          return reject(err);
+          reject(err);
         } else {
           if (ret.code) {
             message.success(intl.get('Send.transSuccess'));
-            return resolve(ret);
+            resolve(ret);
           } else {
-            if (ret.includes('insufficient funds')) {
-              message.warn(intl.get('Common.sendFailedForInsufficientFunds'));
-            } else {
-              message.warn(intl.get('Common.sendFailed'));
-            }
-            return reject(ret);
+            message.warn(convertCrossChainTxErrorText(ret.result));
+            reject(ret);
           }
         }
       })
@@ -107,30 +104,26 @@ class CrossETH extends Component {
       gasPrice: transParams.gasPrice,
       gasLimit: transParams.gasLimit,
       storeman: transParams.storeman,
-      // txFeeRatio: transParams.txFeeRatio
       tokenPairID: tokenPairID,
       crossType: transParams.crossType
     };
     return new Promise((resolve, reject) => {
       wand.request('crossChain_crossChain', { input, tokenPairID, sourceSymbol: info.toChainSymbol, sourceAccount: info.toAccount, destinationSymbol: info.fromChainSymbol, destinationAccount: info.fromAccount, type: 'LOCK' }, (err, ret) => {
+        console.log(err, ret);
         if (err) {
-          if (err instanceof Object && err.desc && err.desc instanceof Array && err.desc.includes('ready')) {
+          if (err instanceof Object && err.desc && err.desc.includes('ready')) {
             message.warn(intl.get('Common.networkError'));
           } else {
-            message.warn(intl.get('Common.sendFailed'));
+            message.warn(err.desc);
           }
-          return reject(err);
+          reject(err);
         } else {
           if (ret.code) {
             message.success(intl.get('Send.transSuccess'));
-            return resolve(ret);
+            resolve(ret);
           } else {
-            if (ret.includes('insufficient funds')) {
-              message.warn(intl.get('Common.sendFailedForInsufficientFunds'));
-            } else {
-              message.warn(intl.get('Common.sendFailed'));
-            }
-            return reject(ret);
+            message.warn(convertCrossChainTxErrorText(ret.result));
+            reject(ret);
           }
         }
       })

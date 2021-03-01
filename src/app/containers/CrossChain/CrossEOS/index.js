@@ -35,19 +35,18 @@ class CrossEOS extends Component {
     super(props);
     const { tokenPairs, match } = props;
     const tokenPairID = match.params.tokenPairId;
-    this.props.setCurrSymbol(CHAINTYPE);
-    this.props.changeTitle('Common.crossChain');
-    this.props.setCurrTokenPairId(tokenPairID);
     this.info = tokenPairs[tokenPairID];
-    this.props.setCurrToken(this.info.toAccount);
-    this.props.setCurrTokenChain(this.info.toChainSymbol);
-    this.props.updateTransHistory();
     this.state = {
       error: false,
     }
   }
 
   componentDidMount() {
+    this.props.changeTitle('Common.crossChain');
+    this.props.setCurrSymbol(CHAINTYPE);
+    this.props.setCurrTokenPairId(this.props.match.params.tokenPairId);
+    this.props.setCurrToken(this.info.toAccount);
+    this.props.setCurrTokenChain(this.info.toChainSymbol);
     this.props.updateTransHistory();
     this.props.updateTokensBalance(this.info.toAccount, this.info.toChainSymbol);
     this.timer = setInterval(() => {
@@ -74,9 +73,11 @@ class CrossEOS extends Component {
     let info = tokenPairs[currTokenPairId];
     return new Promise((resolve, reject) => {
       wand.request('crossChain_crossEOS2WAN', { sourceAccount: info.fromAccount, sourceSymbol: info.fromChainSymbol, destinationAccount: info.toAccount, destinationSymbol: info.toChainSymbol, type: 'LOCK', input, currTokenPairId }, (err, ret) => {
+        console.log(err, ret);
         if (err) {
           console.log('crossChain_lockEOS:', err);
-          message.warn(intl.get('Common.sendFailed'));
+          // message.warn(intl.get('Common.sendFailed'));
+          message.warn(err);
           return reject(err);
         } else {
           return resolve(ret)
@@ -92,9 +93,11 @@ class CrossEOS extends Component {
     let info = tokenPairs[currTokenPairId];
     return new Promise((resolve, reject) => {
       wand.request('crossChain_crossEOS2WAN', { sourceAccount: info.toAccount, sourceSymbol: info.toChainSymbol, destinationAccount: info.fromAccount, destinationSymbol: info.fromChainSymbol, type: 'LOCK', input, currTokenPairId }, (err, ret) => {
+        console.log(err, ret);
         if (err) {
           console.log('crossChain_lockEOS:', err);
-          message.warn(intl.get('Common.sendFailed'));
+          // message.warn(intl.get('Common.sendFailed'));
+          message.warn(err);
           return reject(err);
         } else {
           return resolve(ret)

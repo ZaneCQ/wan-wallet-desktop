@@ -422,7 +422,6 @@ const zh_CN = {
     'NormalTransForm.ConfirmForm.inputData': '附加数据',
     'NormalTransForm.ConfirmForm.faceValue': '面值',
     'NormalTransForm.ConfirmForm.count': '数量',
-
     'NormalTransForm.estimateGasFailed': '估算gas失败，请重试',
     'NormalTransForm.invalidAddress': '非法地址',
     'NormalTransForm.shouldBe10Times': '必须是十的倍数',
@@ -453,6 +452,9 @@ const zh_CN = {
     'NormalTransForm.sendAll': '发送全部',
     'NormalTransForm.password': '密码',
     'NormalTransForm.pwdIsIncorrect': '密码不正确',
+    'NormalTransForm.destinationTagRule': 'Destination Tag格式不正确',
+    'NormalTransForm.isNativeBtcAddress': '不允许发送交易给自己',
+    'NormalTransForm.inputToAddress': '请输入接收者地址',
 
     'CrossChainTransForm.ConfirmForm.transactionConfirm': '跨链交易确认',
     'CrossChainTransForm.capacity': '最大配额',
@@ -460,6 +462,8 @@ const zh_CN = {
     'CrossChainTransForm.txFeeRatio': '比率',
     'CrossChainTransForm.estimateFee': '估算的费用',
     'CrossChainTransForm.gasFee': 'Gas费用',
+    'CrossChainTransForm.userNetworkFee': '用户网络费用',
+    'CrossChainTransForm.crossChainNetworkFee': '跨链网络费用',
     'CrossChainTransForm.operationFee': '手续费用',
     'CrossChainTransForm.overBalance': '费用超出了余额, 请确保原始链和目标链余额充足',
     'CrossChainTransForm.overOriginalBalance': '费用超出了余额, 请确保余额充足',
@@ -484,7 +488,9 @@ const zh_CN = {
     'CrossChainTransForm.HTLC': '安全模式',
     'CrossChainTransForm.UnderFastMinimum': '低于最小跨连交易额',
     'CrossChainTransForm.getOperationFeeFailed': '获取手续费用额度失败',
-    'CrossChainTransForm.getQuotaFailed': '获取剩余配额数据失败.',
+    'CrossChainTransForm.getQuotaFailed': '获取剩余配额数据失败',
+    'CrossChainTransForm.getNetworkFeeFailed': '获取网络费用数据失败',
+    'CrossChainTransForm.youWillReceive': '您将收到',
 
     'CrossChain.selectFailed': '修改选择状态失败',
 
@@ -772,7 +778,7 @@ const zh_CN = {
 
     'MoreAccount.inputSearchText': '请输入搜索信息',
 
-    'Storeman.delegationWarnning': '提示：只有等当前跨链节点工作周期结束后才能提取本金。如果想提取本金，需要在下一轮竞选之前点击“退出”按钮'
+    'Storeman.delegationWarning': '提示：只有等当前跨链节点工作周期结束后才能提取本金。如果想提取本金，需要在下一轮竞选之前点击“退出”按钮'
 }
 
 export default zh_CN;

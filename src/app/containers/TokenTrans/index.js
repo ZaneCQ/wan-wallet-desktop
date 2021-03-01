@@ -39,11 +39,6 @@ message.config({
 
 @observer
 class TokenTrans extends Component {
-  constructor(props) {
-    super(props);
-    this.init(props.tokenAddr, props.chain);
-  }
-
   init = (tokenAddr, chain) => {
     this.props.setCurrToken(tokenAddr);
     this.props.setCurrTokenChain(chain);
@@ -54,6 +49,7 @@ class TokenTrans extends Component {
   }
 
   componentDidMount() {
+    this.init(this.props.tokenAddr, this.props.chain);
     this.props.changeTitle('WanAccount.wallet');
     const { tokenAddr, chain } = this.props;
     this.props.getChainStoreInfoByChain(chain).updateTransHistory();
@@ -228,6 +224,7 @@ class TokenTrans extends Component {
         case 'import':
         case 'rawKey':
           wand.request('transaction_tokenNormal', trans, (err, txHash) => {
+            console.log('Token res:', err, txHash);
             if (err) {
               message.warn(intl.get('WanAccount.sendTransactionFailed'));
               reject(false); // eslint-disable-line prefer-promise-reject-errors
@@ -240,7 +237,6 @@ class TokenTrans extends Component {
                 resolve(txHash)
               }
               this.props.getChainStoreInfoByChain(this.props.chain).updateTransHistory();
-              console.log('Tx hash: ', txHash);
             }
           });
           break;
