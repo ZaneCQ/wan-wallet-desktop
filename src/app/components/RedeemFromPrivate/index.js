@@ -12,7 +12,6 @@ const RedeemForm = Form.create({ name: 'RedeemFromPrivateForm' })(RedeemFromPriv
 
 @inject(stores => ({
   language: stores.languageIntl.language,
-  chainId: stores.session.chainId,
   addrInfo: stores.wanAddress.addrInfo,
   transParams: stores.sendTransParams.transParams,
   updateGasPrice: (...args) => stores.sendTransParams.updateGasPrice(...args),
@@ -60,7 +59,7 @@ class RedeemFromPrivate extends Component {
         }
       });
     } catch (err) {
-      console.log(`Get private transaction information failed: ${err}`)
+      console.log(`Failed to get private transaction information: ${err}`)
       message.warn(err);
     }
   }

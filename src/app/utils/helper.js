@@ -3,12 +3,15 @@ import keccak from 'keccak';
 import intl from 'react-intl-universal';
 import { BigNumber } from 'bignumber.js';
 import bs58check from 'bs58check';
-import { WANPATH, DEFAULT_GAS, HASHX, FAKEADDR, FAKESTOREMAN, X, FAKEVAL, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, WALLETID, PRIVATE_TX_AMOUNT_SELECTION, BTCPATH_MAIN, BTCCHAINID, ETHPATH, EOSPATH, XRPPATH, DECIMALS } from 'utils/settings';
+import bech32 from 'bech32';
+import { WANPATH, DEFAULT_GAS, HASHX, FAKEADDR, FAKESTOREMAN, X, FAKEVAL, MIN_CONFIRM_BLKS, MAX_CONFIRM_BLKS, WALLETID, PRIVATE_TX_AMOUNT_SELECTION, BTCPATH_MAIN, BTCCHAINID, ETHPATH, EOSPATH, XRPPATH, BSCPATH_MAIN, BSCPATH_TEST, DECIMALS, MAIN, CHAINID } from 'utils/settings';
 
 import { fromWei, isNumber, formatNumByDecimals } from 'utils/support';
 
 const web3 = new Web3();
 const wanUtil = require('wanchain-util');
+const keypairs = require('ripple-keypairs')
+const elliptic = require('elliptic')
 let emitterHandlers = {};
 
 export const deserializeWanTx = data => {
@@ -190,7 +193,7 @@ export const getNonce = function (addrArr, chainType) {
   return new Promise((resolve, reject) => {
     wand.request('address_getNonce', { addr: addrArr, chainType: chainType }, (err, val) => {
       if (err) {
-        console.log('Get nonce failed', err)
+        console.log('Failed to get nonce', err)
         return reject(err);
       } else {
         let nonce = parseInt(val, 16);
@@ -204,7 +207,7 @@ export const getGasPrice = function (chainType) {
   return new Promise((resolve, reject) => {
     wand.request('query_getGasPrice', { chainType: chainType }, (err, val) => {
       if (err) {
-        console.log('Get gas price failed ', err);
+        console.log('Failed to get gas price ', err);
         return reject(err)
       } else {
         let gasPrice = new BigNumber(val).div(BigNumber(10).pow(9)).toString(10);
@@ -240,26 +243,16 @@ export const getStoremanGroupList = function (srcChainName, dstChainName) {
   })
 }
 
-export const getStoremanGroupListByChainPair = function (chainId1, chainId2) {
-  return new Promise((resolve, reject) => {
-    wand.request('crossChain_getStoremanGroupListByChainPair', { chainId1, chainId2 }, (err, val) => {
-      if (err) {
-        console.log('Get Smg list3 failed', err)
-        return reject(err);
-      } else {
-        return resolve(val);
-      }
-    });
-  })
-}
-
-export const getReadyOpenStoremanGroupListByChainPair = function () {
+export const getReadyOpenStoremanGroupList = function () {
   return new Promise((resolve, reject) => {
     wand.request('storeman_getReadyOpenStoremanGroupList', {}, (err, val) => {
       if (err) {
         console.log('Get Smg failed', err)
         return reject(err);
       } else {
+        if (val instanceof Array && val.length > 1) {
+          val.sort((front, behind) => front.groupId > behind.groupId);
+        }
         return resolve(val);
       }
     });
@@ -270,7 +263,7 @@ export const estimateGas = function (chainType, tx) {
   return new Promise((resolve, reject) => {
     wand.request('transaction_estimateGas', { chainType: chainType, tx: tx }, (err, val) => {
       if (err) {
-        console.log('Estimate gas failed ', err);
+        console.log('Failed to estimate gas ', err);
         return reject(err);
       } else {
         return resolve(val);
@@ -283,7 +276,7 @@ export const checkWanAddr = function (address) {
   return new Promise((resolve, reject) => {
     wand.request('address_isWanAddress', { address }, (err, val) => {
       if (err) {
-        console.log('Check WAN address failed ', err);
+        console.log('Failed to check WAN address ', err);
         return reject(err);
       } else {
         return resolve(val);
@@ -318,13 +311,29 @@ export const checkXRPAddr = function (address) {
   })
 };
 
+export const checkBTCAddr = async function (address) {
+  const [valid1, valid2] = await Promise.all([checkBase58(address), checkBech32(address)]);
+  return valid1 || valid2;
+};
+
 export const checkBase58 = function (address) {
   return new Promise((resolve, reject) => {
     try {
       bs58check.decode(address);
       resolve(true);
     } catch (error) {
-      reject(error);
+      resolve(false);
+    }
+  });
+}
+
+export const checkBech32 = function (address) {
+  return new Promise((resolve, reject) => {
+    try {
+      bech32.decode(address);
+      resolve(true);
+    } catch (error) {
+      resolve(false);
     }
   });
 }
@@ -333,7 +342,7 @@ export const checkWanValidatorAddr = function (address) {
   return new Promise((resolve, reject) => {
     wand.request('address_isValidatorAddress', { address: address }, (err, val) => {
       if (err) {
-        err = 'Check WAN address failed: ' + err
+        err = 'Failed to check WAN address: ' + err
         return reject(err)
       } else {
         return resolve(val);
@@ -342,22 +351,34 @@ export const checkWanValidatorAddr = function (address) {
   })
 };
 
-export const getChainId = function () {
+export const getNetwork = function () {
   return new Promise((resolve, reject) => {
     wand.request('query_config', {
       param: 'network'
     }, function (err, val) {
       if (err) {
-        err = 'Get chain ID failed:' + err;
-        return reject(err);
+        err = 'Failed to get network:' + err;
+        reject(err);
       } else {
-        if (val['network'].includes('main')) {
-          return resolve(1);
-        } else {
-          return resolve(3);
-        }
+        resolve(val['network']);
       }
     });
+  });
+};
+
+export const getChainId = function () {
+  return new Promise((resolve, reject) => {
+    getNetwork()
+      .then(res => {
+        if (res === MAIN) {
+          return resolve(CHAINID.MAIN);
+        } else {
+          return resolve(CHAINID.TEST);
+        }
+      }).catch(err => {
+        err = 'Failed to get chain ID:' + err;
+        return reject(err);
+      });
   });
 };
 
@@ -367,7 +388,7 @@ export const isSdkReady = function () {
       param: 'sdkStatus'
     }, function (err, val) {
       if (err) {
-        err = 'Get SDK status failed: ' + err;
+        err = 'Failed to get SDK status: ' + err;
         return reject(err);
       } else {
         if (val['sdkStatus'].includes('ready')) {
@@ -384,6 +405,20 @@ export const checkAddrType = function (addr, addrInfo) {
   let type = false;
   if (typeof addr === 'string') {
     addr = String(addr).startsWith('0x') ? addr : `0x${addr}`.toLowerCase();
+    Object.keys(addrInfo).forEach(item => {
+      let has = Object.keys(addrInfo[item]).find(val => val.toLowerCase() === addr.toLowerCase());
+      if (has) {
+        type = item;
+        return type;
+      }
+    })
+    return type
+  }
+}
+
+export const checkXRPAddrType = function (addr, addrInfo) {
+  let type = false;
+  if (typeof addr === 'string') {
     Object.keys(addrInfo).forEach(item => {
       let has = Object.keys(addrInfo[item]).find(val => val.toLowerCase() === addr.toLowerCase());
       if (has) {
@@ -708,57 +743,6 @@ export const createFirstAddr = function (walletID, chainType, path, name) {
   })
 }
 
-/* export const createWANAddrInfo = async function () {
-  let CHAINID = 5718350;
-  let index = await getNewPathIndex(CHAINID, WANPATH, WALLETID.NATIVE);
-  let path = `${WANPATH}${index}`;
-  return new Promise((resolve, reject) => {
-    wand.request('address_getOne', { walletID: WALLETID.NATIVE, chainType: 'WAN', path: path }, async (err, info) => {
-      if (!err) {
-        resolve({ info, index, path });
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-export const createWANAddrByPath = async function ({ info, index, path }) {
-  let CHAINID = 5718350;
-  return new Promise((resolve, reject) => {
-    getNewAccountName(CHAINID, 'WAN-Account').then(name => {
-      wand.request('account_create', { walletID: WALLETID.NATIVE, path: path, meta: { name, addr: `0x${info.address}`.toLowerCase(), waddr: `0x${info.waddress}`.toLowerCase() } }, (err, val_account_create) => {
-        if (!err && val_account_create) {
-          let addressInfo = {
-            start: index.toString(),
-            name,
-            path,
-            address: wanUtil.toChecksumAddress(`0x${info.address}`),
-            waddress: wanUtil.toChecksumOTAddress(`0x${info.waddress}`),
-          }
-          resolve(addressInfo);
-        } else {
-          reject(err);
-        }
-      });
-    })
-  });
-}
-
-export const createWANAddr = async function () {
-  return new Promise((resolve, reject) => {
-    createWANAddrInfo().then(data => {
-      createWANAddrByPath(data).then(res => {
-        resolve(res);
-      }).catch(err => {
-        reject(err);
-      });
-    }).catch(err => {
-      reject(err);
-    });
-  })
-} */
-
 export const createWANAddr = async function (checkDuplicate) {
   let index = await getNewPathIndex(5718350, WANPATH, WALLETID.NATIVE);
   let path = `${WANPATH}${index}`;
@@ -790,62 +774,6 @@ export const createWANAddr = async function (checkDuplicate) {
   })
 }
 
-/* export const createBTCAddrInfo = async function (path, index) {
-  return new Promise((resolve, reject) => {
-    wand.request('address_getOne', { walletID: WALLETID.NATIVE, chainType: 'BTC', path }, async (err, info) => {
-      console.log('a:', err, info);
-      if (!err) {
-        resolve({ info, index, path });
-      } else {
-        reject(err);
-      }
-    });
-  });
-}
-
-export const createBTCAddrByPath = async function ({ info, index, path }, CHAINID) {
-  return new Promise((resolve, reject) => {
-    getNewAccountName(CHAINID, 'BTC-Account').then(name => {
-      wand.request('address_btcImportAddress', { address: info.address }, (err, data) => {
-        if (!err) {
-          wand.request('account_create', { walletID: WALLETID.NATIVE, path, meta: { name, addr: info.address } }, (err, val_account_create) => {
-            if (!err && val_account_create) {
-              resolve({
-                start: index.toString(),
-                name,
-                address: info.address
-              });
-            } else {
-              reject(err);
-            }
-          });
-        } else {
-          reject(err);
-        }
-      });
-    })
-  });
-}
-
-export const createBTCAddr = function (btcPath, index) {
-  let path = `${btcPath}${index}`;
-  const CHAINID = btcPath === BTCPATH_MAIN ? BTCCHAINID.MAIN : BTCCHAINID.TEST;
-  console.log('---:', path)
-  return new Promise((resolve, reject) => {
-    createBTCAddrInfo(path, index).then(data => {
-      console.log('data:', data)
-      createBTCAddrByPath(data, CHAINID).then(res => {
-        console.log('res:', res);
-        resolve(res);
-      }).catch(err => {
-        reject(err);
-      });
-    }).catch(err => {
-      reject(err);
-    });
-  })
-} */
-
 export const createBTCAddr = function (btcPath, index, checkDuplicate) {
   let path = `${btcPath}${index}`;
   const CHAINID = btcPath === BTCPATH_MAIN ? BTCCHAINID.MAIN : BTCCHAINID.TEST;
@@ -856,21 +784,15 @@ export const createBTCAddr = function (btcPath, index, checkDuplicate) {
           return reject(new Error('exist'));
         }
         let name = await getNewAccountName(CHAINID, 'BTC-Account');
-        wand.request('address_btcImportAddress', { address: data.address }, (err_btcImportAddress) => {
-          if (!err_btcImportAddress) {
-            wand.request('account_create', { walletID: WALLETID.NATIVE, path, meta: { name, addr: data.address } }, (err, val_account_create) => {
-              if (!err && val_account_create) {
-                return resolve({
-                  start: index.toString(),
-                  name,
-                  address: data.address
-                });
-              } else {
-                return reject(err);
-              }
+        wand.request('account_create', { walletID: WALLETID.NATIVE, path, meta: { name, addr: data.address } }, (err, val_account_create) => {
+          if (!err && val_account_create) {
+            return resolve({
+              start: index.toString(),
+              name,
+              address: data.address
             });
           } else {
-            return reject(err_btcImportAddress);
+            return reject(err);
           }
         });
       } else {
@@ -879,55 +801,6 @@ export const createBTCAddr = function (btcPath, index, checkDuplicate) {
     });
   })
 }
-
-/* export const createETHAddrInfo = async function () {
-  let CHAINID = 60;
-  let index = await getNewPathIndex(CHAINID, ETHPATH, WALLETID.NATIVE);
-  let path = `${ETHPATH}${index}`;
-  return new Promise((resolve, reject) => {
-    wand.request('address_getOne', { walletID: WALLETID.NATIVE, chainType: 'ETH', path }, async (err, info) => {
-      if (!err) {
-        resolve({ info, index, path });
-      } else {
-        reject(err);
-      }
-    });
-  });
-} */
-
-/* export const createETHAddrByPath = async function ({ info, index, path }) {
-  let CHAINID = 60;
-  return new Promise((resolve, reject) => {
-    getNewAccountName(CHAINID, 'ETH-Account').then(name => {
-      wand.request('account_create', { walletID: WALLETID.NATIVE, path: path, meta: { name, addr: `0x${info.address}` } }, (err, val_account_create) => {
-        if (!err && val_account_create) {
-          let addressInfo = {
-            start: index.toString(),
-            name,
-            address: `0x${info.address}`
-          }
-          resolve(addressInfo);
-        } else {
-          reject(err);
-        }
-      });
-    })
-  });
-} */
-
-/* export const createETHAddr = async function () {
-  return new Promise((resolve, reject) => {
-    createETHAddrInfo().then(data => {
-      createETHAddrByPath(data).then(res => {
-        resolve(res);
-      }).catch(err => {
-        reject(err);
-      });
-    }).catch(err => {
-      reject(err);
-    });
-  })
-} */
 
 export const createETHAddr = async function (checkDuplicate) {
   let CHAINID = 60;
@@ -1032,6 +905,19 @@ export const btcCoinSelect = function (utxos, value, feeRate) {
   });
 }
 
+export const btcCoinSelectSplit = function (utxos, to, feeRate) {
+  return new Promise((resolve, reject) => {
+    wand.request('address_btcCoinSelectSplit', { utxos, to, feeRate }, (err, data) => {
+      if (err) {
+        console.log('btcCoinSelectSplit: ', err)
+        return reject(err);
+      } else {
+        return resolve(data);
+      }
+    });
+  });
+}
+
 export const getPathFromUtxos = function (utxos, addrInfo, btcPath) {
   let fromArr = [];
   let addresses = new Set(utxos.map(item => item.address));
@@ -1068,6 +954,10 @@ export const getFullChainName = function (chainType = '') {
       return intl.get('Common.bitcoin');
     case 'EOS':
       return intl.get('Common.eos');
+    case 'XRP':
+      return intl.get('Common.ripple');
+    case 'BNB':
+      return intl.get('Common.bsc');
   }
 }
 
@@ -1087,7 +977,7 @@ export const checkEosPublicKey = function (address) {
   return new Promise((resolve, reject) => {
     wand.request('address_isEosPublicKey', { address }, (err, val) => {
       if (err) {
-        console.log('Check WAN address failed ', err);
+        console.log('Failed to check WAN address ', err);
         return reject(err);
       } else {
         return resolve(val);
@@ -1243,10 +1133,10 @@ export const getBurnQuota = function (chainType, tokenPairID, storemanGroupID) {
   })
 }
 
-export const getQuota = function (chainType, groupId, tokenPairIdArray) {
+export const getQuota = function (chainType, groupId, symbolArray) {
   return new Promise((resolve, reject) => {
-    wand.request('crossChain_getQuota', { chainType, groupId, tokenPairIdArray }, (err, res) => {
-      console.log('getQuota:', err, res)
+    wand.request('crossChain_getQuota', { chainType, groupId, symbolArray }, (err, res) => {
+      // console.log('getQuota:', err, res)
       if (err) {
         return reject(new Error('get quota failed'));
       } else {
@@ -1266,7 +1156,7 @@ export const checkAddressByChainType = async (address, chain) => {
       valid = await checkETHAddr(address);
       break;
     case 'BTC':
-      valid = await checkBase58(address);
+      valid = await checkBTCAddr(address);
       break;
     case 'EOS':
       try {
@@ -1296,7 +1186,6 @@ export const getFastMinCount = (chainType, tokenPairID) => {
 export const getFees = (chainType, chainID1, chainID2) => {
   return new Promise((resolve, reject) => {
     wand.request('crossChain_getFees', { chainType, chainID1, chainID2 }, (err, res) => {
-      console.log('getFees:', err, res)
       if (err) {
         return reject(err);
       } else {
@@ -1306,9 +1195,9 @@ export const getFees = (chainType, chainID1, chainID2) => {
   });
 }
 
-export const estimateSmartFee = () => {
+export const estimateSmartFee = chainType => {
   return new Promise((resolve, reject) => {
-    wand.request('transaction_estimateSmartFee', {}, (err, res) => {
+    wand.request('transaction_estimateSmartFee', { chainType }, (err, res) => {
       if (err) {
         return reject(err);
       } else {
@@ -1333,7 +1222,7 @@ export const resetSettingsByOptions = (attrs) => {
 export const getCrossChainContractData = function (param) {
   return new Promise((resolve, reject) => {
     wand.request('crossChain_getCrossChainContractData', param, (err, ret) => {
-      console.log('CC data:', err, ret)
+      console.log('CC data:', err, ret);
       if (err) {
         return reject(err);
       } else {
@@ -1346,3 +1235,53 @@ export const getCrossChainContractData = function (param) {
     })
   })
 };
+
+export const convertCrossChainTxErrorText = (text) => {
+  if (text === 'insufficient funds for gas * price + value') {
+    return intl.get('Common.sendFailedForInsufficientFunds');
+  } else {
+    return text;
+  }
+}
+
+export const getStoremanAddrByGpk1 = function (gpk) {
+  if (!gpk) {
+    return null
+  }
+  const Secp256k1 = elliptic.ec('secp256k1');
+  const pubkey = Secp256k1.keyFromPublic('04' + gpk.slice(2), 'hex');
+  const compressed = pubkey.getPublic(true, 'hex');
+  return keypairs.deriveAddress(compressed.toUpperCase())
+}
+
+export const estimateGasForNormalTrans = function (param) {
+  return new Promise((resolve, reject) => {
+    param.isSend = false;
+    wand.request('transaction_normal', param, (err, ret) => {
+      if (err) {
+        resolve(false);
+      } else {
+        if (ret.code) {
+          resolve({
+            data: ret.result.data,
+            gas: (ret.result || {}).estimateGas || false
+          });
+        } else {
+          resolve(false);
+        }
+      }
+    });
+  });
+};
+
+export const converter = function (str, from, to) {
+  return new Promise((resolve, reject) => {
+    wand.request('transaction_converter', { str, from, to }, (err, ret) => {
+      if (err) {
+        resolve(false);
+      } else {
+        resolve(ret);
+      }
+    });
+  });
+}

@@ -24,7 +24,8 @@ const pt_PT = {
     'Common.ethereum': 'Ethereum',
     'Common.bitcoin': 'Bitcoin',
     'Common.eos': 'EOS',
-    'Common.ripple': 'Ripple',
+    'Common.ripple': 'XRPL',
+    'Common.bsc': 'BSC',
     'Common.options': 'Opções',
     'Common.ok': 'OK',
     'Common.cancel': 'Cancelar',
@@ -32,7 +33,7 @@ const pt_PT = {
     'Common.create': 'Criar',
     'Common.balance': 'Saldo',
     'Common.sendFailed': 'A rede não está estável. Por favor, tente novamente',
-    'Common.sendFailedForInsufficientFunds': 'Transaction sent failed. Please make sure you have sufficient balance.',
+    'Common.sendFailedForInsufficientFunds': 'Failed to send transaction. Please make sure you have sufficient balance.',
     'Common.networkError': 'Erro na rede. Por favor, reinicie a carteira',
     'Common.eosTokens': 'Tokens EOS',
     'Common.convert': 'Converter',
@@ -40,9 +41,9 @@ const pt_PT = {
     'Common.storemanGroup': 'Storeman Group',
     'Common.chain': 'Chain (cadeia/blockchain)',
     'Common.amountTooLow': 'O valor mínimo deve ser { minAmount } WAN',
-    'Common.availableBalance': 'Available Balance is {availableBalance}',
+    'Common.availableBalance': 'O saldo disponível é {availableBalance}',
 
-    'Xrp.destinationTag': 'Destination Tag',
+    'Xrp.destinationTag': 'Tag de Destino',
 
     'Layout.connecting': 'conectando ao servidor',
     'Layout.connected': 'conectado ao servidor',
@@ -235,6 +236,7 @@ const pt_PT = {
     'WanAccount.createAccountFailed': 'Falha na criação da conta ',
     'WanAccount.createAccountSuccess': 'Criar conta com sucesso',
     'WanAccount.newAddressExistInImportedList': 'O novo endereço abaixo será criado, mas o mesmo endereço foi importado. Exclua o endereço importado antes de criar um novo endereço.',
+
     'EosAccount.name': 'NOME',
     'EosAccount.publicKey': 'CHAVE PÚBLICA',
     'EosAccount.account': 'CONTA',
@@ -361,8 +363,8 @@ const pt_PT = {
     'AdvancedOptionForm.nonceIsIncorrect': 'Nonce está incorreto',
     'AdvancedOptionForm.inputData': 'Insira dados',
     'AdvancedOptionForm.inputDataIsIncorrect': 'Dados inseridos estão incorretos',
-    'AdvancedOptionForm.feeRate': 'Fee Rate',
-    'AdvancedOptionForm.feeRateIsIncorrect': 'Fee rate is incorrect',
+    'AdvancedOptionForm.feeRate': 'Taxa de taxa',
+    'AdvancedOptionForm.feeRateIsIncorrect': 'A taxa da taxa está incorreta',
 
     'CopyAndQrcode.copySuccessfully': 'Cópia feita com sucesso',
     'CopyAndQrcode.privateKey': 'Chave privada',
@@ -370,7 +372,7 @@ const pt_PT = {
     'CopyAndQrcode.deleteFailedText': 'Falha na exclusão da conta',
     'CopyAndQrcode.deleteSuccessfulText': 'Exclusão da conta feita com sucesso',
 
-    'MoreTokens.tokenList': 'Token List',
+    'MoreTokens.tokenList': 'Lista de Token',
 
     'HwWallet.Accounts.name': 'NOME',
     'HwWallet.Accounts.address': 'ENDEREÇO',
@@ -421,7 +423,6 @@ const pt_PT = {
     'NormalTransForm.ConfirmForm.inputData': 'Insira dados',
     'NormalTransForm.ConfirmForm.faceValue': 'Face Value',
     'NormalTransForm.ConfirmForm.count': 'Count',
-
     'NormalTransForm.estimateGasFailed': 'Falha na estimativa do gás. Por favor, tente novamente',
     'NormalTransForm.invalidAddress': 'Endereço inválido',
     'NormalTransForm.shouldBe10Times': 'O valor deve ser divisível por 10',
@@ -452,6 +453,9 @@ const pt_PT = {
     'NormalTransForm.sendAll': 'Enviar tudo',
     'NormalTransForm.password': 'Senha',
     'NormalTransForm.pwdIsIncorrect': 'Senha está incorreta',
+    'NormalTransForm.destinationTagRule': 'Destination tag is incorrect',
+    'NormalTransForm.isNativeBtcAddress': 'It is not allowed to send to yourself.',
+    'NormalTransForm.inputToAddress': 'Please enter recipient address',
 
     'CrossChainTransForm.ConfirmForm.transactionConfirm': 'Confirmar transação cross-chain',
     'CrossChainTransForm.capacity': 'Capacidade',
@@ -459,6 +463,8 @@ const pt_PT = {
     'CrossChainTransForm.txFeeRatio': 'Taxa do Ratio',
     'CrossChainTransForm.estimateFee': 'Taxa estimada',
     'CrossChainTransForm.gasFee': 'Taxa do Gás',
+    'CrossChainTransForm.userNetworkFee': 'Taxa de rede do usuário',
+    'CrossChainTransForm.crossChainNetworkFee': 'Taxa de rede cruzada',
     'CrossChainTransForm.operationFee': 'Taxa de operação',
     'CrossChainTransForm.overBalance': 'O custo excede o saldo. Verifique o saldo na blockchain original e na de destino',
     'CrossChainTransForm.overOriginalBalance': 'The cost exceeds the balance. Please check the balance',
@@ -478,12 +484,14 @@ const pt_PT = {
     'CrossChainTransForm.Secret': 'Segredo',
     'CrossChainTransForm.Status': 'Status',
     'CrossChainTransForm.Date': 'Dados',
-    'CrossChainTransForm.crossType': 'Cross Type',
+    'CrossChainTransForm.crossType': 'Tipo Cruzado',
     'CrossChainTransForm.FAST': 'Modo rápido',
     'CrossChainTransForm.HTLC': 'Modo seguro',
     'CrossChainTransForm.UnderFastMinimum': 'Menor que o limite mínimo de transação',
     'CrossChainTransForm.getOperationFeeFailed': 'Falha ao obter taxa de operação.',
-    'CrossChainTransForm.getQuotaFailed': 'Get quota failed.',
+    'CrossChainTransForm.getQuotaFailed': 'Falha ao obter cota',
+    'CrossChainTransForm.getNetworkFeeFailed': 'Falha ao obter taxa de rede',
+    'CrossChainTransForm.youWillReceive': 'Você receberá',
 
     'CrossChain.selectFailed': 'Falha na atualização do status de seleção.',
 
@@ -502,6 +510,7 @@ const pt_PT = {
     'SendNormalTrans.hasNoWANBalance': 'Por favor,verifique se você possui saldo suificiente em WAN',
     'SendNormalTrans.hasNoTokenBalance': 'Por favor,verifique se você possui saldo suficiente em token',
     'SendNormalTrans.hasNoETHBalance': 'Por favor,verifique se você tem saldo suficiente em ETH',
+    'SendNormalTrans.hasNoBNBBalance': 'Por favor,verifique se você tem saldo suficiente em BNB',
     'SendNormalTrans.smgUnavailable': 'Grupo Storeman indisponível',
 
     'TransHistory.time': 'Tempo',
@@ -769,9 +778,9 @@ const pt_PT = {
     'Storeman.delegationTopup': 'Adicionar à Delegação',
     'Storeman.registration': 'Registro do Storeman',
 
-    'MoreAccount.inputSearchText': 'Input search text',
+    'MoreAccount.inputSearchText': 'Texto de pesquisa de entrada',
 
-    'Storeman.delegationWarnning': 'Notice:  Click "exit" any time before the end of current Storeman cycle to withdraw your WAN back to your wallet at cycle end time.'
+    'Storeman.delegationWarning': 'Aviso: Clique em "sair" a qualquer momento antes do final do ciclo atual do Storeman para retirar sua WAN de volta para sua carteira no final do ciclo'
 }
 
 export default pt_PT;

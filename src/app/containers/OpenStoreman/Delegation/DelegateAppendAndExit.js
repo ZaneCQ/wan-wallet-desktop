@@ -144,7 +144,7 @@ class ModifyForm extends Component {
         data: estimateData.data,
         nonce: '0x' + estimateData.nonce.toString(16),
         gasPrice: '0x' + Number(estimateData.gasPrice).toString(16),
-        gasLimit: '0x' + Number(estimateData.gasLimit).toString(16),
+        gasLimit: '0x' + Number(new BigNumber(estimateData.gasLimit).multipliedBy(1.6).toString(10)).toString(16),
       };
       let raw = await pu.promisefy(signTransaction, [BIP44Path, rawTx], this);// Trezor sign
       let txHash = await pu.promisefy(wand.request, ['transaction_raw', { raw, chainType: 'WAN' }], this);
@@ -205,6 +205,7 @@ class ModifyForm extends Component {
         message.warn(intl.get('NormalTransForm.estimateGasFailed'));
       } else {
         let data = ret.result;
+        data.estimateGas = new BigNumber(data.estimateGas).multipliedBy(1.6).toString(10);
         this.setState({
           gasPrice: data.gasPrice,
           gasLimit: data.estimateGas,
@@ -313,6 +314,7 @@ class DelegateAppendAndExit extends Component {
           message.warn(intl.get('NormalTransForm.estimateGasFailed'));
         } else {
           let data = ret.result;
+          data.estimateGas = new BigNumber(data.estimateGas).multipliedBy(1.6).toString(10);
           this.setState({
             spin: false,
             txParams: {

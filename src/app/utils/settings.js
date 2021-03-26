@@ -1,4 +1,7 @@
-export const CHAINID = {
+export const MAIN = 'main';
+export const TESTNET = 'testnet';
+
+export const CHAINID = { // WAN, ETH
   MAIN: 1,
   TEST: 3,
 }
@@ -6,6 +9,11 @@ export const CHAINID = {
 export const BTCCHAINID = {
   MAIN: 0,
   TEST: 1,
+}
+
+export const BSCCHAINID = {
+  MAIN: 56,
+  TEST: 97,
 }
 
 export const WALLETID = {
@@ -43,8 +51,8 @@ export const REVOKEWETH_GAS = '250000';
 
 export const FAST_GAS = '350000';
 
-export const MAIN = 'https://www.wanscan.org';
-export const TESTNET = 'https://testnet.wanscan.org';
+export const WANMAIN = 'https://www.wanscan.org';
+export const WANTESTNET = 'https://testnet.wanscan.org';
 
 export const BTCMAIN = 'https://www.blockchain.com/btc';
 export const BTCTESTNET = 'https://www.blockchain.com/btc-testnet';
@@ -58,12 +66,16 @@ export const ETHTESTNET = 'https://rinkeby.etherscan.io';
 export const EOSMAIN = 'https://bloks.io';
 export const EOSTESTNET = 'https://jungle.bloks.io';
 
+export const BNBMAIN = 'https://bscscan.com';
+export const BNBTESTNET = 'https://testnet.bscscan.com';
+
 export const BTCPATH_MAIN = "m/44'/0'/0'/0/";
 export const BTCPATH_TEST = "m/44'/1'/0'/0/";
 export const ETHPATH = "m/44'/60'/0'/0/";
 export const EOSPATH = "m/44'/194'/0'/0/";
 export const XRPPATH = "m/44'/144'/0'/0/";
 export const WANPATH = "m/44'/5718350'/0'/0/";
+export const BSCPATH = "m/44'/60'/0'/0/";
 
 export const STAKEACT = ['StakeIn', 'StakeRegister', 'StakeUpdate', 'StakeAppend', 'StakeUpdateFeeRate'];
 export const OSMSTAKEACT = ['Storeman-stakeIn', 'Storeman-stakeAppend', 'Storeman-stakeOut', 'Storeman-stakeClaim', 'Storeman-stakeIncentiveClaim'];
@@ -76,7 +88,7 @@ export const FAKEADDR = '0x0000000000000000000000000000000000000003';
 export const FAKESTOREMAN = '0x0000000000000000000000000000000000000004';
 
 export const WALLET_CHAIN = ['WAN', 'BTC', 'ETH', 'EOS', 'XRP'];
-export const CROSSCHAINTYPE = ['WAN', 'BTC', 'ETH', 'EOS'];
+export const CROSSCHAINTYPE = ['WAN', 'BTC', 'ETH', 'EOS', 'XRP'];
 
 export const MAX_CONFIRM_BLKS = 100000000;
 export const MIN_CONFIRM_BLKS = 0;
@@ -104,3 +116,18 @@ export const MAX_BTC_FEE_RATE = 2000;
 export const DECIMALS = {
   XRP: 6
 }
+
+export const MINXRPBALANCE = '20';
+export const DEBOUNCE_DURATION = 600;
+
+export const FNX_POOL_TESTNET = '0xcbf7eab1639c175545a0d8b24ac47ea36a2720ed';
+export const FNX_POOL_MAINNET = '0xdab498c11f19b25611331cebffd840576d1dc86d';
+
+export const FNX_TOKEN_TESTNET = '0x0664b5e161a741bcdec503211beeec1e8d0edb37';
+export const FNX_TOKEN_MAINNET = '0xef9cd7882c067686691b6ff49e650b43afbbcc6b';
+
+export const CFNX_POOL_TESTNET = '0xfdbc6f64407bd15f36fbedf2dfbd9d93ee61309c';
+export const CFNX_POOL_MAINNET = '0xfdbc6f64407bd15f36fbedf2dfbd9d93ee61309c';
+
+export const CFNX_TOKEN_TESTNET = '0x55bdda9679274368e529905b70bf90e48d6c9cbb';
+export const CFNX_TOKEN_MAINNET = '0x55bdda9679274368e529905b70bf90e48d6c9cbb';

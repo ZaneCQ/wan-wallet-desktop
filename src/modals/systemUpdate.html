@@ -30,8 +30,7 @@
         </p>
         <br>
         <div id="hardUpgradeWarningText">
-            This version has a major upgrade. Please upgrade to the latest version or you will not be able to use WAN
-            wallet.
+            <!-- A warning text about force upgrade. -->
         </div>
         <div id="release">
             <!-- Release notes: -->
@@ -87,6 +86,7 @@
         'title',
         'head',
         'newVersion',
+        'hardUpgradeWarningText',
         'release',
         'no',
         'upgrade',
@@ -187,6 +187,7 @@
 
                         case 'downloadPercentage':
                             const progressObj = JSON.parse(val);
+                            console.log('progress:', progressObj);
                             if (releasePlatform === 'win32') {
                                 setWindowsLoadingPercentage(progressObj);
                             } else {

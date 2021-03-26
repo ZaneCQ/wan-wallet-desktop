@@ -63,7 +63,7 @@ class WanAccount extends Component {
     },
     {
       dataIndex: 'action',
-      render: (text, record) => <div><SendNormalTrans balance={record.balance} buttonClassName={style.actionButton} from={record.address} path={record.path} handleSend={this.handleSend} chainType={CHAINTYPE} /></div>,
+      render: (text, record) => <div><SendNormalTrans balance={record.balance} buttonClassName={style.actionButton} walletID={record.wid} from={record.address} path={record.path} handleSend={this.handleSend} chainType={CHAINTYPE} /></div>,
       width: '13%'
     },
     {
@@ -158,11 +158,12 @@ class WanAccount extends Component {
       nonce: params.nonce,
       data: params.data,
     };
+
     return new Promise((resolve, reject) => {
       wand.request('transaction_normal', trans, (err, txHash) => {
         if (err) {
           message.warn(intl.get('WanAccount.sendTransactionFailed'));
-          console.log('Send transaction failed:', err);
+          console.log('Failed to send transaction:', err);
           reject(err);
         } else {
           console.log('Tx hash: ', txHash);
@@ -196,7 +197,7 @@ class WanAccount extends Component {
       wand.request('transaction_private', trans, (err, txHash) => {
         if (err) {
           message.warn(intl.get('WanAccount.sendBatchTransactionFailed'));
-          console.log('Send transaction failed:', err);
+          console.log('Failed to send transaction:', err);
           reject(err);
         } else {
           message.success(intl.get('WanAccount.sendTransactionSuccessFully'));

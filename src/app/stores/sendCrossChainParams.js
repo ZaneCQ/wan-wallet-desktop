@@ -1,10 +1,12 @@
 import { observable, action, computed, makeObservable } from 'mobx';
-import { CROSS_TYPE } from 'utils/settings';
+import { CROSS_TYPE, FAST_GAS } from 'utils/settings';
 import session from './session';
 
 const GASLIMIT = 21000;
 
 class SendCrossChainParams {
+  @observable record = {};
+
   @observable currentFrom = '';
 
   @observable transParams = {};
@@ -26,6 +28,29 @@ class SendCrossChainParams {
     txFeeRatio: ''
   };
 
+  @observable XRPCrossTransParams = {
+    groupAddr: '',
+    groupName: '',
+    value: 0,
+    groupId: '',
+    path: '',
+    from: {
+      walletID: 1,
+      path: ''
+    },
+    fromAddr: '',
+    to: {
+      walletID: 1,
+      path: ''
+    },
+    toAddr: '',
+    networkFee: '0',
+    gasPrice: 1,
+    gasLimit: FAST_GAS,
+    chainType: '',
+    tokenPairID: ''
+  };
+
   @observable gasLimit = GASLIMIT;
 
   @observable defaultGasPrice = 10;
@@ -36,6 +61,10 @@ class SendCrossChainParams {
 
   constructor() {
     makeObservable(this);
+  }
+
+  @action updateRecord(record) {
+    self.record = record;
   }
 
   @action addCrossTransTemplate(addr, params = {}) {
@@ -68,18 +97,24 @@ class SendCrossChainParams {
     });
   }
 
-    @action updateTransParams (addr, paramsObj) {
-      Object.keys(paramsObj).forEach(item => {
-        self.transParams[addr][item] = paramsObj[item];
-      });
-    }
+  @action updateTransParams(addr, paramsObj) {
+    Object.keys(paramsObj).forEach(item => {
+      self.transParams[addr][item] = paramsObj[item];
+    });
+  }
 
-    @computed get minCrossBTC() {
-      return 0.002;
-    }
+  @action updateXRPTransParams(paramsObj) {
+    Object.keys(paramsObj).forEach(item => {
+      self.XRPCrossTransParams[item] = paramsObj[item];
+    });
+  }
+
+  @computed get minCrossBTC() {
+    return 0.002;
+  }
 
   @computed get btcFee() {
-    return session.chainId === 1 ? 0.0001 : 0.001;
+    return session.isMainNetwork ? 0.0001 : 0.001;
   }
 }
 

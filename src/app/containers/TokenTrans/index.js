@@ -8,7 +8,7 @@ import CopyAndQrcode from 'components/CopyAndQrcode';
 import SendTokenNormalTrans from 'components/SendNormalTrans/SendTokenNormalTrans';
 import { WanTx, WanRawTx } from 'utils/hardwareUtils'
 import { checkAddrType, getWalletIdByType, getFullChainName } from 'utils/helper';
-import { WALLETID, TRANSTYPE, MAIN, TESTNET, BTCMAIN, BTCTESTNET, ETHMAIN, ETHTESTNET } from 'utils/settings';
+import { WALLETID, TRANSTYPE, WANMAIN, WANTESTNET, BTCMAIN, BTCTESTNET, ETHMAIN, ETHTESTNET, BNBMAIN, BNBTESTNET } from 'utils/settings';
 import { signTransaction } from 'componentUtils/trezor';
 import { formatNum } from 'utils/support';
 import style from './index.less';
@@ -20,6 +20,7 @@ message.config({
 
 @inject(stores => ({
   chainId: stores.session.chainId,
+  isMainNetwork: stores.session.isMainNetwork,
   language: stores.languageIntl.language,
   getTokenAmount: stores.tokens.getTokenAmount,
   currTokenAddr: stores.tokens.currTokenAddr,
@@ -39,11 +40,6 @@ message.config({
 
 @observer
 class TokenTrans extends Component {
-  constructor(props) {
-    super(props);
-    this.init(props.tokenAddr, props.chain);
-  }
-
   init = (tokenAddr, chain) => {
     this.props.setCurrToken(tokenAddr);
     this.props.setCurrTokenChain(chain);
@@ -54,6 +50,7 @@ class TokenTrans extends Component {
   }
 
   componentDidMount() {
+    this.init(this.props.tokenAddr, this.props.chain);
     this.props.changeTitle('WanAccount.wallet');
     const { tokenAddr, chain } = this.props;
     this.props.getChainStoreInfoByChain(chain).updateTransHistory();
@@ -66,14 +63,6 @@ class TokenTrans extends Component {
 
   componentWillUnmount() {
     clearInterval(this.timer);
-  }
-
-  componentWillReceiveProps(newProps) {
-    let addr = newProps.match.params.tokenAddr;
-    let chain = newProps.match.params.chain;
-    if (addr !== this.props.currTokenAddr) {
-      this.init(addr, chain);
-    }
   }
 
   sendLedgerTrans = (path, tx) => {
@@ -131,8 +120,9 @@ class TokenTrans extends Component {
     let params = this.props.transParams[from];
     const { chain, symbol, getChainAddressInfoByChain } = this.props;
     let addrInfo = getChainAddressInfoByChain(chain);
+
     if (addrInfo === undefined) {
-      message.warn(intl.get('Unknown token type')); // To do : i18n
+      console.log('Unknown token type');
       return;
     }
 
@@ -154,6 +144,7 @@ class TokenTrans extends Component {
         token: params.token
       }
     };
+
     return new Promise((resolve, reject) => {
       switch (type) {
         case 'ledger':
@@ -228,6 +219,7 @@ class TokenTrans extends Component {
         case 'import':
         case 'rawKey':
           wand.request('transaction_tokenNormal', trans, (err, txHash) => {
+            console.log('Token res:', err, txHash);
             if (err) {
               message.warn(intl.get('WanAccount.sendTransactionFailed'));
               reject(false); // eslint-disable-line prefer-promise-reject-errors
@@ -240,7 +232,6 @@ class TokenTrans extends Component {
                 resolve(txHash)
               }
               this.props.getChainStoreInfoByChain(this.props.chain).updateTransHistory();
-              console.log('Tx hash: ', txHash);
             }
           });
           break;
@@ -249,20 +240,23 @@ class TokenTrans extends Component {
   }
 
   onClickTokenAddress = () => {
-    let { chainId, tokenAddr, currTokenChain } = this.props;
+    let { isMainNetwork, tokenAddr, currTokenChain } = this.props;
     let prefix = '';
     switch (currTokenChain) {
       case 'WAN':
-        prefix = chainId === 1 ? MAIN : TESTNET;
+        prefix = isMainNetwork ? WANMAIN : WANTESTNET;
         break;
       case 'ETH':
-        prefix = chainId === 1 ? ETHMAIN : ETHTESTNET;
+        prefix = isMainNetwork ? ETHMAIN : ETHTESTNET;
         break;
       case 'BTC':
-        prefix = chainId === 1 ? BTCMAIN : BTCTESTNET;
+        prefix = isMainNetwork ? BTCMAIN : BTCTESTNET;
+        break;
+      case 'BNB':
+        prefix = isMainNetwork ? BNBMAIN : BNBTESTNET;
         break;
       default:
-        prefix = chainId === 1 ? MAIN : TESTNET;
+        prefix = isMainNetwork ? WANMAIN : WANTESTNET;
     }
     wand.shell.openExternal(`${prefix}/token/${tokenAddr}`);
   }

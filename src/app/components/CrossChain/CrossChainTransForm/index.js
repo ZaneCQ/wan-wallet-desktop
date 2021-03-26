@@ -49,10 +49,9 @@ class CrossChainTransForm extends Component {
 
   async componentDidUpdate(prevProps) {
     if (prevProps.smgList !== this.props.smgList) {
-      let { smgList, direction, currTokenPairId, currentTokenPairInfo: info } = this.props;
+      let { smgList, currentTokenPairInfo: info, chainType } = this.props;
       try {
-        const chainType = direction === INBOUND ? info.fromChainSymbol : info.toChainSymbol;
-        let [{ minQuota, maxQuota }] = await getQuota(chainType, smgList[0].groupId, [currTokenPairId]);
+        const [{ minQuota, maxQuota }] = await getQuota(((info.ancestorSymbol === 'EOS' && chainType === 'WAN') ? 'EOS' : chainType), smgList[0].groupId, [info.ancestorSymbol]);// EOS在WAN侧的做特殊处理
         const decimals = info.ancestorDecimals;
         this.setState({
           minQuota: formatNumByDecimals(minQuota, decimals),
@@ -93,10 +92,10 @@ class CrossChainTransForm extends Component {
   }
 
   handleNext = () => {
-    const { updateTransParams, settings, form, from, estimateFee, type, getChainAddressInfoByChain, currentTokenPairInfo: info } = this.props;
+    const { updateTransParams, settings, form, from, type, getChainAddressInfoByChain, currentTokenPairInfo: info } = this.props;
     let toAddrInfo = getChainAddressInfoByChain(info[type === INBOUND ? 'toChainSymbol' : 'fromChainSymbol']);
     let isNativeAccount = false; // Figure out if the to value is contained in my wallet.
-    form.validateFields(async (err, { pwd, amount: sendAmount, to }) => {
+    form.validateFields(['from', 'balance', 'storemanAccount', 'quota', 'to', 'totalFee', 'amount'], { force: true }, async (err, { pwd, amount: sendAmount, to }) => {
       if (err) {
         console.log('handleNext:', err);
         return;
@@ -119,7 +118,21 @@ class CrossChainTransForm extends Component {
       } else if (this.addressSelections.includes(to)) {
         isNativeAccount = true;
       }
-      let toPath = (type === INBOUND ? info.toChainID : info.fromChainID) - Number('0x80000000'.toString(10));
+
+      let toPath;
+      if (type === INBOUND) {
+        if (info.toChainSymbol === 'BNB') { // BNB coin type id is the same with ETH, both are 60.
+          toPath = 60;
+        } else {
+          toPath = info.toChainID - Number('0x80000000'.toString(10));
+        }
+      } else {
+        if (info.fromChainSymbol === 'BNB') {
+          toPath = 60;
+        } else {
+          toPath = info.fromChainID - Number('0x80000000'.toString(10));
+        }
+      }
       toPath = isNativeAccount ? `m/44'/${toPath}'/0'/0/${toAddrInfo.normal[to].path}` : undefined;
 
       if (settings.reinput_pwd) {
@@ -180,14 +193,18 @@ class CrossChainTransForm extends Component {
     }
   }
 
-  updateLockAccounts = async (storeman, option) => {
-    let { from, form, updateTransParams, chainType, type, currTokenPairId, currentTokenPairInfo: info } = this.props;
+  updateLockAccounts = async (storeman) => {
+    let { from, form, updateTransParams, chainType, type, currentTokenPairInfo: info } = this.props;
     try {
-      const [{ minQuota, maxQuota }] = await getQuota(chainType, storeman, [currTokenPairId]);
+      const [{ minQuota, maxQuota }] = await getQuota(((info.ancestorSymbol === 'EOS' && chainType === 'WAN') ? 'EOS' : chainType), storeman, [info.ancestorSymbol]);// EOS在WAN侧的做特殊处理
       const decimals = info.ancestorDecimals;
       this.setState({
         minQuota: formatNumByDecimals(minQuota, decimals),
         maxQuota: formatNumByDecimals(maxQuota, decimals)
+      }, () => {
+        form.setFieldsValue({
+          quota: `${this.state.maxQuota} ${type === INBOUND ? info.fromTokenSymbol : info.toTokenSymbol}`
+        })
       });
     } catch (e) {
       console.log('e:', e);
@@ -224,7 +241,13 @@ class CrossChainTransForm extends Component {
     if (this.accountSelections.includes(value) || this.addressSelections.includes(value)) {
       callback();
     } else {
-      let isValid = await checkAddressByChainType(value, chain);
+      let isValid;
+      if (chain === 'WAN') {
+        let [isWAN, isETH] = await Promise.all([checkAddressByChainType(value, 'WAN'), checkAddressByChainType(value, 'ETH')]);
+        isValid = isWAN || isETH;
+      } else {
+        isValid = await checkAddressByChainType(value, chain);
+      }
       isValid ? callback() : callback(intl.get('NormalTransForm.invalidAddress'));
     }
   }
@@ -282,7 +305,6 @@ class CrossChainTransForm extends Component {
     }
     gasFee = `${removeRedundantDecimal(gasFee)} ${feeUnit}`;
     let operationFeeWithUnit = `${removeRedundantDecimal(operationFee)} ${feeUnit}`;
-
     return (
       <div>
         <Modal

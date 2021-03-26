@@ -8,7 +8,7 @@ import localStyle from './index.less'; // Do not delete this line
 import PwdForm from 'componentUtils/PwdForm';
 import { fromWei, wandWrapper } from 'utils/support.js';
 import { signTransaction } from 'componentUtils/trezor';
-import { MAIN, TESTNET, WALLETID } from 'utils/settings';
+import { WANMAIN, WANTESTNET, WALLETID } from 'utils/settings';
 import CommonFormItem from 'componentUtils/CommonFormItem';
 import AddrSelectForm from 'componentUtils/AddrSelectForm';
 import DelegationConfirmForm from './DelegationConfirmForm';
@@ -21,7 +21,7 @@ const pu = require('promisefy-util');
 const Confirm = Form.create({ name: 'DelegationConfirmForm' })(DelegationConfirmForm);
 
 @inject(stores => ({
-  chainId: stores.session.chainId,
+  isMainNetwork: stores.session.isMainNetwork,
   settings: stores.session.settings,
   addrInfo: stores.wanAddress.addrInfo,
   storemanConf: stores.openstoreman.storemanConf,
@@ -129,6 +129,7 @@ class OsmDelegateInForm extends Component {
           message.warn(intl.get('NormalTransForm.estimateGasFailed'));
         } else {
           let data = ret.result;
+          data.estimateGas = new BigNumber(data.estimateGas).multipliedBy(1.6).toString(10);
           this.setState({
             gasPrice: data.gasPrice,
             gasLimit: data.estimateGas,
@@ -230,7 +231,7 @@ class OsmDelegateInForm extends Component {
   }
 
   onClick = () => {
-    let href = this.props.chainId === 1 ? `${MAIN}/storemangroups` : `${TESTNET}/storemangroups`;
+    let href = this.props.isMainNetwork ? `${WANMAIN}/storemangroups` : `${WANTESTNET}/storemangroups`;
     wand.shell.openExternal(href);
   }
 
@@ -253,7 +254,7 @@ class OsmDelegateInForm extends Component {
         data: estimateData.data,
         nonce: '0x' + estimateData.nonce.toString(16),
         gasPrice: '0x' + Number(estimateData.gasPrice).toString(16),
-        gasLimit: '0x' + Number(estimateData.gasLimit).toString(16),
+        gasLimit: '0x' + Number(new BigNumber(estimateData.gasLimit).multipliedBy(1.6).toString(10)).toString(16),
       };
       let raw = await pu.promisefy(signTransaction, [BIP44Path, rawTx], this);// Trezor sign
       let txHash = await pu.promisefy(wand.request, ['transaction_raw', { raw, chainType: 'WAN' }], this);
@@ -349,7 +350,7 @@ class OsmDelegateInForm extends Component {
                             optionFilterProp="children"
                             onChange={this.onStoremanChange}
                             getPopupContainer={() => document.getElementById('osmNameSelect')}
-                            filterOption={(input, option) => option.props.children.props.children[1].toLowerCase().indexOf(input.toLowerCase()) >= 0}
+                            filterOption={(input, option) => option.props.children.props.children[2].toLowerCase().indexOf(input.toLowerCase()) >= 0}
                           >
                             {storemanListSelect.map((item, index) => <Select.Option value={item.props.value} key={index}>{item}</Select.Option>)}
                           </Select>

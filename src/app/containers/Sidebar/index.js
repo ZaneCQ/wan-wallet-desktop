@@ -12,7 +12,6 @@ import { CROSSCHAINTYPE, COIN_ACCOUNT, COIN_ACCOUNT_EOS } from 'utils/settings';
 const { SubMenu, Item } = Menu;
 
 @inject(stores => ({
-  chainId: stores.session.chainId,
   settings: stores.session.settings,
   getWalletSelections: stores.tokens.getWalletSelections,
   sidebarColumns: stores.languageIntl.sidebarColumns,
@@ -107,6 +106,7 @@ class Sidebar extends Component {
 
     // Wallet menu
     let walletList = [];
+
     getWalletSelections.forEach(v => {
       if (v.children.length === 0) {
         return false;
@@ -197,6 +197,7 @@ class Sidebar extends Component {
     } else {
       dAppsChildren.splice(0, dAppsChildren.length - 1);
     }
+
     return (
       <div>
         <div className={style.sidebar + ' sidebar'}>

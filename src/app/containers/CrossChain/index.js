@@ -7,6 +7,7 @@ import { INBOUND, OUTBOUND, COIN_ACCOUNT } from 'utils/settings';
 import Trans from 'components/CrossChain/SendCrossChainTrans';
 import CrossChainTransHistory from 'components/CrossChain/CrossChainTransHistory';
 import { formatNum } from 'utils/support';
+import { convertCrossChainTxErrorText } from 'utils/helper';
 import style from './index.less';
 
 @inject(stores => ({
@@ -15,6 +16,7 @@ import style from './index.less';
   transParams: stores.sendCrossChainParams.transParams,
   tokenPairs: stores.crossChain.tokenPairs,
   currTokenPairId: stores.crossChain.currTokenPairId,
+  currTokenAddr: stores.tokens.currTokenAddr,
   changeTitle: newTitle => stores.languageIntl.changeTitle(newTitle),
   setCurrToken: addr => stores.tokens.setCurrToken(addr),
   updateTokensBalance: (...args) => stores.tokens.updateTokensBalance(...args),
@@ -29,10 +31,6 @@ import style from './index.less';
 class CrossChain extends Component {
   constructor(props) {
     super(props);
-    const { match, changeTitle } = this.props;
-    changeTitle('Common.crossChain');
-    const tokenPairId = match.params.tokenPairId;
-    this.init(tokenPairId);
     this.state = {
       error: false,
     }
@@ -46,14 +44,18 @@ class CrossChain extends Component {
     setCurrSymbol(ancestorSymbol);
   }
 
-  componentWillReceiveProps(newProps) {
-    let id = newProps.match.params.tokenPairId;
-    if (id !== this.props.currTokenPairId) {
-      this.init(id);
+  componentDidUpdate(prevProps) {
+    if (prevProps.match.params.tokenPairId !== this.props.match.params.tokenPairId) {
+      this.init(this.props.match.params.tokenPairId);
     }
   }
 
   componentDidMount() {
+    const { match, changeTitle } = this.props;
+    changeTitle('Common.crossChain');
+    const tokenPairId = match.params.tokenPairId;
+    this.init(tokenPairId);
+
     let updateBalance = () => {
       const { updateTokensBalance, tokenPairs, match } = this.props;
       const tokenPairId = match.params.tokenPairId;
@@ -95,27 +97,24 @@ class CrossChain extends Component {
       tokenPairID: tokenPairID,
       crossType: transParams.crossType
     };
+
     return new Promise((resolve, reject) => {
       wand.request('crossChain_crossChain', { input, tokenPairID, sourceSymbol: info.fromChainSymbol, sourceAccount: info.fromAccount, destinationSymbol: info.toChainSymbol, destinationAccount: info.toAccount, type: 'LOCK' }, (err, ret) => {
+        console.log(err, ret);
         if (err) {
-          console.log('CC tx error:', err)
-          if (err instanceof Object && err.desc && err.desc instanceof Array && err.desc.includes('ready')) {
+          if (err instanceof Object && err.desc && err.desc.includes('ready')) {
             message.warn(intl.get('Common.networkError'));
           } else {
-            message.warn(intl.get('Common.sendFailed'));
+            message.warn(err.desc);
           }
-          return reject(err);
+          reject(err);
         } else {
           if (ret.code) {
             message.success(intl.get('Send.transSuccess'));
-            return resolve(ret);
+            resolve(ret);
           } else {
-            if (ret.includes('insufficient funds')) {
-              message.warn(intl.get('Common.sendFailedForInsufficientFunds'));
-            } else {
-              message.warn(intl.get('Common.sendFailed'));
-            }
-            return reject(ret);
+            message.warn(convertCrossChainTxErrorText(ret.result));
+            reject(ret);
           }
         }
       })
@@ -140,28 +139,25 @@ class CrossChain extends Component {
 
     return new Promise((resolve, reject) => {
       wand.request('crossChain_crossChain', { input, tokenPairID, sourceSymbol: info.toChainSymbol, sourceAccount: info.toAccount, destinationSymbol: info.fromChainSymbol, destinationAccount: info.fromAccount, type: 'LOCK' }, (err, ret) => {
+        console.log(err, ret);
         if (err) {
-          if (err instanceof Object && err.desc && err.desc instanceof Array && err.desc.includes('ready')) {
+          if (err instanceof Object && err.desc && err.desc.includes('ready')) {
             message.warn(intl.get('Common.networkError'));
           } else {
-            message.warn(intl.get('Common.sendFailed'));
+            message.warn(err.desc);
           }
-          return reject(err);
+          reject(err);
         } else {
           if (ret.code) {
             message.success(intl.get('Send.transSuccess'));
-            return resolve(ret);
+            resolve(ret);
           } else {
-            if (ret.includes('insufficient funds')) {
-              message.warn(intl.get('Common.sendFailedForInsufficientFunds'));
-            } else {
-              message.warn(intl.get('Common.sendFailed'));
-            }
-            return reject(ret);
+            message.warn(convertCrossChainTxErrorText(ret.result));
+            reject(ret);
           }
         }
       })
-    })
+    });
   }
 
   inboundColumns = [
@@ -232,7 +228,7 @@ class CrossChain extends Component {
     let fromAddresses = info.fromAccount === COIN_ACCOUNT ? getCoinsListInfo_2way(info.fromChainSymbol, info.fromChainID) : getTokensListInfo_2way(info.fromChainSymbol, info.fromChainID, info.fromAccount);
     let toAddresses = info.toAccount === COIN_ACCOUNT ? getCoinsListInfo_2way(info.toChainSymbol, info.toChainID) : getTokensListInfo_2way(info.toChainSymbol, info.toChainID, info.toAccount);
 
-    return this.state.error ? <div className="errorComponent">An error occurred in this component.</div> : (<div className="account">
+    return this.state.error ? (<div className="errorComponent">An error occurred in this component.</div>) : (<div className="account">
       <Row className="title">
         <Col span={12} className="col-left"><img className="totalImg" src={getCoinImage(info.ancestorSymbol, info.fromAccount)} /><span className="wanTotal">{info.fromTokenSymbol}</span><span className={style.chain}>{info.fromChainName}</span></Col>
       </Row>

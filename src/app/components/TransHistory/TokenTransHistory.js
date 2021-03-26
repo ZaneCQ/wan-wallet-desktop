@@ -2,13 +2,13 @@ import React, { Component } from 'react';
 import { Table, Select } from 'antd';
 import { observer, inject } from 'mobx-react';
 import intl from 'react-intl-universal';
-import { MAIN, TESTNET, BTCMAIN, BTCTESTNET, ETHMAIN, ETHTESTNET } from 'utils/settings';
+import { WANMAIN, WANTESTNET, BTCMAIN, BTCTESTNET, ETHMAIN, ETHTESTNET } from 'utils/settings';
 import history from 'static/image/history.png';
 
 const Option = Select.Option;
 
 @inject(stores => ({
-  chainId: stores.session.chainId,
+  isMainNetwork: stores.session.isMainNetwork,
   language: stores.languageIntl.language,
   currTokenChain: stores.tokens.currTokenChain,
   transColumns: stores.languageIntl.transColumns,
@@ -17,6 +17,18 @@ const Option = Select.Option;
 
 @observer
 class TokenTransHistory extends Component {
+  componentDidMount() {
+    if (this.props.currTokenChain !== '') {
+      this.props.getChainStoreInfoByChain(this.props.currTokenChain).setCurrPage(this.props.name || []);
+    }
+  }
+
+  componentDidUpdate(prevProps) {
+    if (prevProps.currTokenChain !== this.props.currTokenChain) {
+      this.props.getChainStoreInfoByChain(this.props.currTokenChain).setCurrPage(this.props.name || []);
+    }
+  }
+
   onChange = value => {
     this.props.getChainStoreInfoByChain(this.props.currTokenChain).setSelectedAddr(value);
   }
@@ -25,29 +37,19 @@ class TokenTransHistory extends Component {
     let href = '';
     switch (this.props.currTokenChain) {
       case 'WAN':
-        href = this.props.chainId === 1 ? `${MAIN}/tx/${record.key}` : `${TESTNET}/tx/${record.key}`;
+        href = this.props.isMainNetwork ? `${WANMAIN}/tx/${record.key}` : `${WANTESTNET}/tx/${record.key}`;
         break;
       case 'ETH':
-        href = this.props.chainId === 1 ? `${ETHMAIN}/tx/${record.key}` : `${ETHTESTNET}/tx/${record.key}`;
+        href = this.props.isMainNetwork ? `${ETHMAIN}/tx/${record.key}` : `${ETHTESTNET}/tx/${record.key}`;
         break;
       case 'BTC':
-        href = this.props.chainId === 1 ? `${BTCMAIN}/tx/${record.key}` : `${BTCTESTNET}/tx/${record.key}`;
+        href = this.props.isMainNetwork ? `${BTCMAIN}/tx/${record.key}` : `${BTCTESTNET}/tx/${record.key}`;
         break;
       default:
-        href = this.props.chainId === 1 ? `${MAIN}/tx/${record.key}` : `${TESTNET}/tx/${record.key}`;
+        href = this.props.isMainNetwork ? `${WANMAIN}/tx/${record.key}` : `${WANTESTNET}/tx/${record.key}`;
     }
     wand.shell.openExternal(href);
   }
-
-  componentDidMount() {
-    if (this.props.currTokenChain !== '') {
-      this.props.getChainStoreInfoByChain(this.props.currTokenChain).setCurrPage(this.props.name || []);
-    }
-  }
-
-  /* componentDidUpdate(prevProps, prevState) {
-    console.log('Did Update:', prevProps, prevState);
-  } */
 
   render() {
     const { name, getChainStoreInfoByChain, currTokenChain } = this.props;
@@ -68,6 +70,7 @@ class TokenTransHistory extends Component {
       }
       dataSource = tokenTransferHistoryList;
     }
+
     return (
       <div>
         <div className="historyCon" id="tokenAddrSelect">

@@ -16,11 +16,13 @@ import {
   BtcAccount,
   EosAccount,
   XrpAccount,
+  BnbAccount,
   CrossChain,
   CrossWAN,
   CrossETH,
   CrossBTC,
   CrossEOS,
+  CrossXRP,
   MoreCrossChain,
   DApps,
   DAppMarket,
@@ -42,6 +44,7 @@ export default () => {
           <Route path="/ethAccount" component={EthAccount} />
           <Route path="/eosAccount" component={EosAccount} />
           <Route path="/xrpAccount" component={XrpAccount} />
+          <Route path="/bnbAccount" component={BnbAccount} />
           <Route path="/tokens/:chain/:tokenAddr/:symbol" component={TokenTrans} />
           <Route path="/MoreAccount" component={MoreAccount} />
           <Route path="/crossChain/:tokenPairId" component={CrossChain} />
@@ -49,6 +52,7 @@ export default () => {
           <Route path="/crossETH/:tokenPairId" component={CrossETH} />
           <Route path="/crossBTC/:tokenPairId" component={CrossBTC} />
           <Route path="/crossEOS/:tokenPairId" component={CrossEOS} />
+          <Route path="/crossXRP/:tokenPairId" component={CrossXRP} />
           <Route path="/moreCrossChain" component={MoreCrossChain} />
           <Route path="/settings" component={Settings} />
           <Route path="/trezor" component={Trezor} />

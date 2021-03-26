@@ -3,7 +3,7 @@ import { message, Button, Form } from 'antd';
 import { observer, inject } from 'mobx-react';
 import intl from 'react-intl-universal';
 import { getNonce, getGasPrice, getBalanceByAddr } from 'utils/helper';
-import ETHNormalTransForm from 'components/NormalTransForm/ETHNormalTrans/ETHNormalTransForm'
+import ETHNormalTransForm from 'components/NormalTransForm/ETHNormalTrans/ETHNormalTransForm';
 
 const CollectionCreateForm = Form.create({ name: 'ETHNormalTransForm' })(ETHNormalTransForm);
 
@@ -64,12 +64,13 @@ class SendETHNormalTrans extends Component {
 
   render () {
     const { visible, loading, spin } = this.state;
+    const { balance, walletID } = this.props;
 
     return (
       <div>
         <Button type="primary" onClick={this.showModal}>{intl.get('Common.send')}</Button>
         { visible &&
-          <CollectionCreateForm tokenAddr={this.props.tokenAddr} balance={this.props.balance} wrappedComponentRef={this.saveFormRef} onCancel={this.handleCancel} onSend={this.handleSend} loading={loading} spin={spin}/>
+          <CollectionCreateForm balance={balance} walletID={walletID} wrappedComponentRef={this.saveFormRef} onCancel={this.handleCancel} onSend={this.handleSend} loading={loading} spin={spin}/>
         }
       </div>
     );

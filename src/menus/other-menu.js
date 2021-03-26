@@ -75,6 +75,7 @@ export default (i18n) => {
                         accelerator: 'Shift+CommandOrControl+M',
                         checked: setting.network === 'main',
                         enabled: sdkInitialized,
+                        // enabled: false,
                         type: 'radio',
                         click: async (m) => {
                             if (!setting.network.includes('main')) {
